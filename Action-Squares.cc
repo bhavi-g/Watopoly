@@ -62,3 +62,41 @@ public:
     Tuition(std::string name, int position);
     void onLand(Player* p) override;
 };
+
+// --------------------------------------------
+// Gives the player $200 for passing/landing on OSAP.
+// GameController will eventually detect passing.
+// --------------------------------------------
+export class CollectOSAP : public Square {
+public:
+    CollectOSAP(std::string name, int position);
+    void onLand(Player* p) override;
+};
+
+// --------------------------------------------
+// Player is stuck if sent here, nothing if landed on.
+// State tracking handled by GameController.
+// --------------------------------------------
+export class DCTimsLine : public Square {
+public:
+    DCTimsLine(std::string name, int position);
+    void onLand(Player* p) override;
+};
+
+// --------------------------------------------
+// Geese attack! Nothing else happens.
+// --------------------------------------------
+export class GooseNesting : public Square {
+public:
+    GooseNesting(std::string name, int position);
+    void onLand(Player* p) override;
+};
+
+// --------------------------------------------
+// Deducts $150 from the player as coop fee.
+// --------------------------------------------
+export class CoopFee : public Square {
+public:
+    CoopFee(std::string name, int position);
+    void onLand(Player* p) override;
+};
