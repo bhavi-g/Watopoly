@@ -15,6 +15,7 @@
 
 export module Gym;
 
+import LandAction;
 import Building;
 import Player;
 import <string>;
@@ -26,5 +27,5 @@ public:
 
     // Called when a player lands on the Gym.
     // Future: GameController may determine dice outcome and apply rent.
-    void onLand(Player* p) override;
+    LandAction onLand(Player* p) override;
 };

@@ -22,6 +22,7 @@
 export module Building;
 
 import <string>;
+import LandAction;
 import Player;   // Used in onLand(Player*)
 import Square;   // Building is-a Square
 
@@ -48,5 +49,5 @@ public:
 
     // Called when a player lands on this square.
     // Will describe possible actions: buy, pay rent, or do nothing.
-    void onLand(Player* p) override;
+    LandAction onLand(Player* p) override;
 };

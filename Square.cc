@@ -18,6 +18,7 @@
 export module Square;
 
 import <string>;
+import LandAction;
 import Player;
 
 export class Square {
@@ -40,5 +41,5 @@ public:
 
     // Pure virtual function — must be overridden by all derived squares.
     // Defines what should happen when a player lands on this square.
-    virtual void onLand(Player* p) = 0;  // Polymorphic behavior
+    virtual LandAction onLand(Player* p) = 0;
 };

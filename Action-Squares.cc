@@ -19,6 +19,7 @@
 
 export module ActionSquares;
 
+import LandAction;
 import Square;
 import Player;
 import <string>;
@@ -30,7 +31,7 @@ import <string>;
 export class ActionSquare : public Square {
 public:
     ActionSquare(std::string name, int position);
-    void onLand(Player* p) override;
+    LandAction onLand(Player* p) override;
 };
 
 // --------------------------------------------
@@ -40,7 +41,7 @@ public:
 export class NeedlesHall : public Square {
 public:
     NeedlesHall(std::string name, int position);
-    void onLand(Player* p) override;
+    LandAction onLand(Player* p) override;
 };
 
 // --------------------------------------------
@@ -50,7 +51,7 @@ public:
 export class SLC : public Square {
 public:
     SLC(std::string name, int position);
-    void onLand(Player* p) override;
+    LandAction onLand(Player* p) override;
 };
 
 // --------------------------------------------
@@ -60,7 +61,7 @@ public:
 export class Tuition : public Square {
 public:
     Tuition(std::string name, int position);
-    void onLand(Player* p) override;
+    LandAction onLand(Player* p) override;
 };
 
 // --------------------------------------------
@@ -70,7 +71,7 @@ public:
 export class CollectOSAP : public Square {
 public:
     CollectOSAP(std::string name, int position);
-    void onLand(Player* p) override;
+    LandAction onLand(Player* p) override;
 };
 
 // --------------------------------------------
@@ -80,7 +81,7 @@ public:
 export class DCTimsLine : public Square {
 public:
     DCTimsLine(std::string name, int position);
-    void onLand(Player* p) override;
+    LandAction onLand(Player* p) override;
 };
 
 // --------------------------------------------
@@ -89,7 +90,7 @@ public:
 export class GooseNesting : public Square {
 public:
     GooseNesting(std::string name, int position);
-    void onLand(Player* p) override;
+    LandAction onLand(Player* p) override;
 };
 
 // --------------------------------------------
@@ -98,5 +99,5 @@ public:
 export class CoopFee : public Square {
 public:
     CoopFee(std::string name, int position);
-    void onLand(Player* p) override;
+    LandAction onLand(Player* p) override;
 };

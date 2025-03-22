@@ -18,6 +18,7 @@
 
 export module GameController;
 
+import LandAction;
 import <string>;
 import <map>;
 import <iostream>;

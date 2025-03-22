@@ -18,6 +18,7 @@
 
 export module Residence;
 
+import LandAction;
 import Building;
 import Player;
 import <string>;
@@ -29,5 +30,5 @@ public:
 
     // Defines behavior when a player lands on this square.
     // Rent is printed based on owner status (actual rent logic handled elsewhere).
-    void onLand(Player* p) override;
+    LandAction onLand(Player* p) override;
 };

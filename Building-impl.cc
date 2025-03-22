@@ -17,6 +17,7 @@
 module Building;
 
 import <iostream>;
+import LandAction;
 import Player;  // Required to access Player* methods
 
 // Constructor: initializes building with name, position, price.
@@ -46,17 +47,19 @@ void Building::setOwnerToken(const std::string& token) {
 
 // Triggered when a player lands on this square.
 // Outputs the result: buy, rent, or no-op depending on ownership.
-void Building::onLand(Player* p) {
+LandAction Building::onLand(Player* p) {
     std::cout << p->getName() << " landed on " << getName() << " at position "
               << getPosition() << ".\n";
 
     if (ownerToken == "BANK") {
         std::cout << "This property is unowned. You may buy it for $" << price << ".\n";
-        // In a full version, you'd delegate to GameController::promptPurchase(p, this);
+        return LandAction::PromptPurchase;
     } else if (ownerToken != p->getToken()) {
         std::cout << "This property is owned by " << ownerToken << ". Rent logic goes here.\n";
-        // In a full version, you'd delegate to GameController::chargeRent(p, this);
+        return LandAction::PayRent;
     } else {
         std::cout << "You own this property.\n";
+        return LandAction::Owned;
     }
 }
+

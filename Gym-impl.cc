@@ -12,6 +12,7 @@
 module Gym;
 
 import <iostream>;
+import LandAction;
 import GameController;
 
 // Constructs a Gym with name, board position, and purchase price.
@@ -23,15 +24,19 @@ Gym::Gym(std::string name, int position, int price)
 // If unowned, gives purchase option.
 // If owned by another player, prints rent rule.
 // If owned by self, does nothing.
-void Gym::onLand(Player* p) {
+LandAction Gym::onLand(Player* p) {
     std::cout << p->getName() << " landed on Gym " << getName() << ".\n";
 
     if (getOwnerToken() == "BANK") {
         std::cout << "You may buy this for $" << getPrice() << ".\n";
+        return LandAction::PromptPurchase;
     } else if (getOwnerToken() != p->getToken()) {
         std::cout << "Rent is 4x or 10x dice roll depending on # gyms owned by "
                   << getOwnerToken() << ".\n";
+        return LandAction::PayRent;
     } else {
         std::cout << "You own this.\n";
+        return LandAction::Owned;
     }
 }
+

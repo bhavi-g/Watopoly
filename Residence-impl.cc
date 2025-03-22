@@ -15,6 +15,7 @@
 module Residence;
 
 import <iostream>;
+import LandAction;
 import GameController;
 
 // Constructs a Residence square with name, board index, and purchase price.
@@ -23,14 +24,18 @@ Residence::Residence(std::string name, int position, int price)
 
 // Called when a player lands on a Residence square.
 // Describes rent conditions or purchase options based on ownership.
-void Residence::onLand(Player* p) {
+LandAction Residence::onLand(Player* p) {
     std::cout << p->getName() << " landed on Residence " << getName() << ".\n";
 
     if (getOwnerToken() == "BANK") {
         std::cout << "You may buy this for $" << getPrice() << ".\n";
+        return LandAction::PromptPurchase;
     } else if (getOwnerToken() != p->getToken()) {
         std::cout << "Rent is based on how many residences " << getOwnerToken() << " owns.\n";
+        return LandAction::PayRent;
     } else {
         std::cout << "You own this.\n";
+        return LandAction::Owned;
     }
 }
+

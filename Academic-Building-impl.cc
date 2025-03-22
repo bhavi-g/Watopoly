@@ -10,6 +10,7 @@
 module AcademicBuilding;
 
 import <iostream>;
+import LandAction;
 import GameController;  // For future integration of monopoly/rent logic
 
 // Constructor initializes building fields and improvement tracking.
@@ -48,14 +49,18 @@ void AcademicBuilding::removeImprovement() {
 // Defines what happens when a player lands on this academic building.
 // Ownership is checked and appropriate messages are printed.
 // Future version will delegate rent calculation to GameController.
-void AcademicBuilding::onLand(Player* p) {
+LandAction AcademicBuilding::onLand(Player* p) {
     std::cout << p->getName() << " landed on Academic Building " << getName() << ".\n";
 
     if (getOwnerToken() == "BANK") {
         std::cout << "You may buy this for $" << getPrice() << ".\n";
+        return LandAction::PromptPurchase;
     } else if (getOwnerToken() != p->getToken()) {
         std::cout << "Rent logic for academic buildings goes here (considering improvements).\n";
+        return LandAction::PayRent;
     } else {
         std::cout << "You own this.\n";
+        return LandAction::Owned;
     }
 }
+

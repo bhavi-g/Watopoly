@@ -13,6 +13,7 @@
 module GameController;
 import <random>;
 import <ctime>;
+import LandAction;
 import Square;
 
 // Registers a Player with the controller using their token as the key.
@@ -82,7 +83,6 @@ void GameController::setBoard(Board* b) {
 
 void GameController::playTurn(Player* p) {
     // === 1. Roll dice ===
-    // std::srand(std::time(nullptr)); NEED TO SEED THIS LINE WHEN RUNNING GAME ONCE AT BEGINNING
     int die1 = std::rand() % 6 + 1;
     int die2 = std::rand() % 6 + 1;
     int steps = die1 + die2;
@@ -103,6 +103,25 @@ void GameController::playTurn(Player* p) {
         p->receive(200);
     }
 
-    // === 4. Land on square ===
-    landed->onLand(p);
+    // === 4. Land on square and react based on LandAction ===
+    LandAction action = landed->onLand(p);
+
+    switch (action) {
+        case LandAction::PromptPurchase:
+            std::cout << "[Controller]: Would you like to purchase this property? (Prompt logic goes here)\n";
+            break;
+
+        case LandAction::PayRent:
+            std::cout << "[Controller]: Rent must be paid. (Rent logic goes here)\n";
+            break;
+
+        case LandAction::Owned:
+            std::cout << "[Controller]: You landed on your own property. Nothing to do.\n";
+            break;
+
+        case LandAction::None:
+        default:
+            std::cout << "[Controller]: No action required.\n";
+            break;
+    }
 }

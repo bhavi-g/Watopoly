@@ -14,6 +14,7 @@
 
 export module AcademicBuilding;
 
+import LandAction;
 import Building;  // Inherits from Building, which is-a Square
 import Player;
 import <string>;
@@ -46,5 +47,5 @@ public:
 
     // Called when a player lands on this academic building.
     // Displays rent/purchase logic. Future version will calculate rent based on improvements.
-    void onLand(Player* p) override;
+    LandAction onLand(Player* p) override;
 };
