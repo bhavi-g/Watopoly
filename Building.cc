@@ -50,4 +50,6 @@ public:
     // Called when a player lands on this square.
     // Will describe possible actions: buy, pay rent, or do nothing.
     LandAction onLand(Player* p) override;
+
+    virtual int calculateRent(int context = 0) const = 0;
 };

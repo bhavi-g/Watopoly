@@ -79,3 +79,9 @@ void Player::move(int steps) {
     position = (position + steps) % 40;
     std::cout << name << " moves to position " << position << "\n";
 }
+
+void Player::moveTo(int newPosition) {
+    position = newPosition % 40;
+    std::cout << name << " moves directly to position " << position << "\n";
+}
+

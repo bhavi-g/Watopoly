@@ -1,4 +1,3 @@
-/*
 
 // test-main.cc
 // Purpose:
@@ -75,4 +74,4 @@ int main() {
     return 0;
 }
 
-*/
+

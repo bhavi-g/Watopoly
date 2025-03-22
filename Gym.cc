@@ -28,4 +28,7 @@ public:
     // Called when a player lands on the Gym.
     // Future: GameController may determine dice outcome and apply rent.
     LandAction onLand(Player* p) override;
+
+     // Gym rent depends on dice roll * multiplier (based on how many gyms owned)
+    int calculateRent(int context) const override;
 };

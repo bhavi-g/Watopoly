@@ -24,6 +24,8 @@ import <map>;
 import <iostream>;
 import Player;
 import Building;
+import Residence;
+import Gym;
 import Board;
 
 export class GameController {
@@ -65,4 +67,7 @@ public:
     void playTurn(Player* p);  // Simulates a full roll + move + onLand
 
     void promptPurchase(Player* p, Building* b);
+
+    int getResidenceCount(const std::string& ownerToken) const;
+    int getGymCount(const std::string& ownerToken) const;
 };

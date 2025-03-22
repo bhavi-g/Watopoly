@@ -1,3 +1,4 @@
+
 // test-turn.cc
 import <iostream>;
 import Board;
@@ -56,3 +57,4 @@ auto* pac = dynamic_cast<Building*>(board->getSquareByName("PAC"));
 
     return 0;
 }
+

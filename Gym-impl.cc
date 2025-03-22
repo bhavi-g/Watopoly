@@ -13,7 +13,6 @@ module Gym;
 
 import <iostream>;
 import LandAction;
-import GameController;
 
 // Constructs a Gym with name, board position, and purchase price.
 // Delegates base initialization to Building.
@@ -39,4 +38,10 @@ LandAction Gym::onLand(Player* p) {
         return LandAction::Owned;
     }
 }
+
+int Gym::calculateRent(int context) const {
+    // context = numGymsOwned * diceTotal, pre-computed by GameController
+    return context;
+}
+
 

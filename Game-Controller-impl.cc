@@ -79,6 +79,14 @@ void GameController::trade(const std::string& fromToken, const std::string& give
 
 void GameController::setBoard(Board* b) {
     board = b;
+
+    // Populate controller's buildings map from board squares
+    for (int i = 0; i < 40; ++i) {
+        Square* sq = board->getSquare(i);
+        if (auto* bldg = dynamic_cast<Building*>(sq)) {
+            buildings[bldg->getName()] = bldg;
+        }
+    }
 }
 
 void GameController::playTurn(Player* p) {
@@ -118,9 +126,28 @@ void GameController::playTurn(Player* p) {
             break;
         }
 
-        case LandAction::PayRent:
-            std::cout << "[Controller]: Rent must be paid. (Rent logic goes here)\n";
+        case LandAction::PayRent: {
+            auto* b = dynamic_cast<Building*>(landed);
+            if (!b) break;
+
+            int context = 0;
+
+            if (dynamic_cast<Residence*>(b)) {
+                context = getResidenceCount(b->getOwnerToken());
+            } else if (dynamic_cast<Gym*>(b)) {
+                int numGymsOwned = getGymCount(b->getOwnerToken());
+                context = numGymsOwned * (die1 + die2);  // Flattened: context = full rent
+            }
+
+            int rent = b->calculateRent(context);
+
+            std::cout << "[Controller]: " << p->getName()
+                << " must pay $" << rent << " in rent.\n";
+
+            p->pay(rent);
+            getPlayer(b->getOwnerToken())->receive(rent);
             break;
+}
 
         case LandAction::Owned:
             std::cout << "[Controller]: You landed on your own property. Nothing to do.\n";
@@ -162,5 +189,28 @@ void GameController::promptPurchase(Player* p, Building* b) {
     } else {
         std::cout << "[Controller]: " << p->getName() << " declined to buy " << b->getName() << ".\n";
     }
+}
+
+int GameController::getResidenceCount(const std::string& ownerToken) const {
+    int count = 0;
+    for (const auto& [name, b] : buildings) {
+        if (dynamic_cast<Residence*>(b) && b->getOwnerToken() == ownerToken) {
+            ++count;
+        }
+    }
+    std::cout << "[DEBUG] Buildings in controller: " << buildings.size() << "\n";
+
+    return count;
+}
+
+int GameController::getGymCount(const std::string& ownerToken) const {
+    int count = 0;
+    for (const auto& [name, b] : buildings) {
+        if (dynamic_cast<Gym*>(b) && b->getOwnerToken() == ownerToken) {
+            ++count;
+        }
+    }
+    std::cout << "[DEBUG] Buildings in controller: " << buildings.size() << "\n";
+    return count;
 }
 

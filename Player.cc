@@ -59,4 +59,8 @@ public:
 
     // Moves the player forward by a number of steps with board wraparound.
     int getPosition() const;
+
+    // Moves the player directly to a specific board position (no wrapping).
+    void moveTo(int newPosition);
+
 };

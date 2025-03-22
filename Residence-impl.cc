@@ -16,7 +16,6 @@ module Residence;
 
 import <iostream>;
 import LandAction;
-import GameController;
 
 // Constructs a Residence square with name, board index, and purchase price.
 Residence::Residence(std::string name, int position, int price)
@@ -39,3 +38,12 @@ LandAction Residence::onLand(Player* p) {
     }
 }
 
+int Residence::calculateRent(int numOwned) const {
+    switch (numOwned) {
+        case 1: return 25;
+        case 2: return 50;
+        case 3: return 100;
+        case 4: return 200;
+        default: return 0;
+    }
+}

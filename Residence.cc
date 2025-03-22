@@ -31,4 +31,7 @@ public:
     // Defines behavior when a player lands on this square.
     // Rent is printed based on owner status (actual rent logic handled elsewhere).
     LandAction onLand(Player* p) override;
+    
+    int calculateRent(int context) const override;
+
 };
