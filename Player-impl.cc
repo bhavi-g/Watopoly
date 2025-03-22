@@ -68,3 +68,14 @@ bool Player::owns(const std::string& buildingName) const {
         ownedBuildings.begin(), ownedBuildings.end(), buildingName
     ) != ownedBuildings.end();
 }
+
+// Returns the current board position of the player.
+int Player::getPosition() const {
+    return position;
+}
+
+// Moves the player forward by a number of steps with board wraparound.
+void Player::move(int steps) {
+    position = (position + steps) % 40;
+    std::cout << name << " moves to position " << position << "\n";
+}

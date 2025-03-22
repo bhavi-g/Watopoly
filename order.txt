@@ -4,9 +4,9 @@ Building.cc
 Academic-Building.cc
 Residence.cc
 Gym.cc
-Game-Controller.cc
 Action-Squares.cc
 Board.cc
+Game-Controller.cc
 
 Player-impl.cc
 Square-impl.cc
@@ -18,4 +18,4 @@ Game-Controller-impl.cc
 Action-Squares-impl.cc
 Board-impl.cc
 
-test-board.cc
+test-turn.cc

@@ -1,4 +1,4 @@
-import <iostream>;
+/*import <iostream>;
 
 import Square;
 import Player;
@@ -25,3 +25,5 @@ int main() {
     delete testPlayer;
     return 0;
 }
+*/
+

@@ -24,6 +24,7 @@ private:
     std::string token;                        // Unique identifier (e.g., "V")
     int money;                                // Player's current balance
     std::vector<std::string> ownedBuildings;  // List of names of owned properties
+    int position = 0; // Default starting position
 
 public:
     // Constructs a player with a given name, token, and optional starting money.
@@ -52,4 +53,10 @@ public:
 
     // Checks whether the player owns a given building.
     bool owns(const std::string& buildingName) const;
+
+    // Returns the current board position of the player.
+    void move(int steps);
+
+    // Moves the player forward by a number of steps with board wraparound.
+    int getPosition() const;
 };

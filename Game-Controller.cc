@@ -23,6 +23,7 @@ import <map>;
 import <iostream>;
 import Player;
 import Building;
+import Board;
 
 export class GameController {
 private:
@@ -31,6 +32,7 @@ private:
 
     // Maps building names to Building* instances
     std::map<std::string, Building*> buildings;
+    Board* board;  // NEW: pointer to the board
 
 public:
     // Registers a player with the controller (must be unique token).
@@ -56,4 +58,8 @@ public:
 
     // Retrieves a Building pointer by name (e.g., "DC", "EV1").
     Building* getBuilding(const std::string& name) const;
+
+    void setBoard(Board* b);  // Inject the board from main
+
+    void playTurn(Player* p);  // Simulates a full roll + move + onLand
 };

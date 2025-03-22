@@ -11,6 +11,9 @@
 //   This is where high-level game logic starts to take shape.
 
 module GameController;
+import <random>;
+import <ctime>;
+import Square;
 
 // Registers a Player with the controller using their token as the key.
 void GameController::addPlayer(Player* p) {
@@ -71,4 +74,35 @@ void GameController::trade(const std::string& fromToken, const std::string& give
 
     std::cout << fromToken << " traded " << giveB << " for " << receiveB
               << " with " << toToken << "!\n";
+}
+
+void GameController::setBoard(Board* b) {
+    board = b;
+}
+
+void GameController::playTurn(Player* p) {
+    // === 1. Roll dice ===
+    // std::srand(std::time(nullptr)); NEED TO SEED THIS LINE WHEN RUNNING GAME ONCE AT BEGINNING
+    int die1 = std::rand() % 6 + 1;
+    int die2 = std::rand() % 6 + 1;
+    int steps = die1 + die2;
+
+    std::cout << p->getName() << " rolled " << die1 << " and " << die2
+              << " for a total of " << steps << ".\n";
+
+    // === 2. Move player ===
+    int oldPos = p->getPosition();
+    p->move(steps);  // Wraps at 40 automatically
+
+    int newPos = p->getPosition();
+    Square* landed = board->getSquare(newPos);
+
+    // === 3. Handle passing Collect OSAP (position 0) ===
+    if (newPos < oldPos) {
+        std::cout << p->getName() << " passed Collect OSAP and collects $200!\n";
+        p->receive(200);
+    }
+
+    // === 4. Land on square ===
+    landed->onLand(p);
 }
