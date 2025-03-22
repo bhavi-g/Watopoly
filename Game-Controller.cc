@@ -63,4 +63,6 @@ public:
     void setBoard(Board* b);  // Inject the board from main
 
     void playTurn(Player* p);  // Simulates a full roll + move + onLand
+
+    void promptPurchase(Player* p, Building* b);
 };

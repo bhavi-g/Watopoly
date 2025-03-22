@@ -107,9 +107,16 @@ void GameController::playTurn(Player* p) {
     LandAction action = landed->onLand(p);
 
     switch (action) {
-        case LandAction::PromptPurchase:
-            std::cout << "[Controller]: Would you like to purchase this property? (Prompt logic goes here)\n";
+        case LandAction::PromptPurchase: {
+            // Cast to Building* so we can access getPrice/setOwner, etc.
+            Building* b = dynamic_cast<Building*>(landed);
+            if (b) {
+                promptPurchase(p, b);
+            } else {
+                std::cout << "[Error]: PromptPurchase returned but square is not a Building!\n";
+            }
             break;
+        }
 
         case LandAction::PayRent:
             std::cout << "[Controller]: Rent must be paid. (Rent logic goes here)\n";
@@ -119,9 +126,41 @@ void GameController::playTurn(Player* p) {
             std::cout << "[Controller]: You landed on your own property. Nothing to do.\n";
             break;
 
+        case LandAction::CollectOSAP:
+        case LandAction::PayTuition:
+        case LandAction::PayCoopFee:
+        case LandAction::Teleport:
+        case LandAction::MoneyEvent:
+            // These are handled inside onLand() already
+            break;
+
         case LandAction::None:
         default:
             std::cout << "[Controller]: No action required.\n";
             break;
     }
 }
+
+
+void GameController::promptPurchase(Player* p, Building* b) {
+    std::cout << "[Controller]: Would you like to buy " << b->getName()
+              << " for $" << b->getPrice() << "? (y/n): ";
+
+    std::string choice;
+    std::cin >> choice;
+
+    if (choice == "y" || choice == "Y") {
+        if (p->getMoney() >= b->getPrice()) {
+            p->pay(b->getPrice());
+            p->addProperty(b->getName());
+            b->setOwnerToken(p->getToken());
+
+            std::cout << "[Controller]: " << p->getName() << " now owns " << b->getName() << "!\n";
+        } else {
+            std::cout << "[Controller]: " << p->getName() << " cannot afford this property.\n";
+        }
+    } else {
+        std::cout << "[Controller]: " << p->getName() << " declined to buy " << b->getName() << ".\n";
+    }
+}
+
