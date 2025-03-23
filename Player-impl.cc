@@ -85,3 +85,7 @@ void Player::moveTo(int newPosition) {
     std::cout << name << " moves directly to position " << position << "\n";
 }
 
+void Player::setMoney(int newAmount) {
+    money = newAmount;
+}
+

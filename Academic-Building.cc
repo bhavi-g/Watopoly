@@ -33,21 +33,18 @@ public:
     // Returns the monopoly block name (e.g., "Sci1", "Math").
     std::string getMonopolyBlock() const;
 
-    // Returns the cost to add a single improvement.
-    int getImprovementCost() const;
-
-    // Returns how many improvements are currently applied to this building.
-    int getImprovements() const;
-
-    // Increments the number of improvements (max = 5).
-    void addImprovement();
-
-    // Decrements the number of improvements (min = 0).
-    void removeImprovement();
-
     // Called when a player lands on this academic building.
     // Displays rent/purchase logic. Future version will calculate rent based on improvements.
     LandAction onLand(Player* p) override;
 
     int calculateRent(int context = 0) const override;
+
+    void addImprovement();             // increments improvement count
+
+    void removeImprovement();          // decrements
+
+    int getImprovementCount() const;   // returns count
+    
+    int getImprovementCost() const;    // stored from constructor
+
 };

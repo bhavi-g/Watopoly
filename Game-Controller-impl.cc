@@ -214,3 +214,69 @@ int GameController::getGymCount(const std::string& ownerToken) const {
     return count;
 }
 
+bool GameController::improveBuilding(Player* p, AcademicBuilding* ab) {
+    if (ab->getOwnerToken() != p->getToken()) {
+        std::cout << "[Error] You do not own this building.\n";
+        return false;
+    }
+
+    if (ab->getImprovementCount() >= 5) {
+        std::cout << "[Error] Max improvements reached.\n";
+        return false;
+    }
+
+    if (!hasMonopoly(p->getToken(), ab->getMonopolyBlock())) {
+        std::cout << "[Error] You must own all buildings in the block to improve.\n";
+        return false;
+    }
+
+    int cost = ab->getImprovementCost();
+    if (p->getMoney() < cost) {
+        std::cout << "[Error] Not enough funds to improve.\n";
+        return false;
+    }
+
+    ab->addImprovement();
+    p->pay(cost);
+
+    std::cout << "[Success] " << ab->getName() << " improved to "
+              << ab->getImprovementCount() << " level(s).\n";
+
+    return true;
+}
+
+bool GameController::hasMonopoly(const std::string& token, const std::string& blockName) {
+    for (const auto& [name, b] : buildings) {
+        auto* ab = dynamic_cast<AcademicBuilding*>(b);
+        if (ab && ab->getMonopolyBlock() == blockName) {
+            if (ab->getOwnerToken() != token) {
+                return false;  // Player doesn't own this building in the block
+            }
+        }
+    }
+    return true;  // All buildings in block are owned by player
+}
+
+bool GameController::degradeBuilding(Player* p, AcademicBuilding* ab) {
+    if (ab->getOwnerToken() != p->getToken()) {
+        std::cout << "[Error] You do not own this building.\n";
+        return false;
+    }
+
+    if (ab->getImprovementCount() <= 0) {
+        std::cout << "[Error] No improvements to remove.\n";
+        return false;
+    }
+
+    ab->removeImprovement();
+    int refund = ab->getImprovementCost() / 2;
+    p->receive(refund);
+
+    std::cout << "[Success] Sold 1 improvement from " << ab->getName()
+              << ". New level: " << ab->getImprovementCount()
+              << ". Refunded $" << refund << ".\n";
+
+    return true;
+}
+
+

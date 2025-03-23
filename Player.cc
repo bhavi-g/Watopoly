@@ -63,4 +63,6 @@ public:
     // Moves the player directly to a specific board position (no wrapping).
     void moveTo(int newPosition);
 
+    void setMoney(int newAmount);
+
 };

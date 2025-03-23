@@ -25,6 +25,7 @@ import <iostream>;
 import Player;
 import Building;
 import Residence;
+import AcademicBuilding;
 import Gym;
 import Board;
 
@@ -70,4 +71,11 @@ public:
 
     int getResidenceCount(const std::string& ownerToken) const;
     int getGymCount(const std::string& ownerToken) const;
+
+    bool improveBuilding(Player* p, AcademicBuilding* ab);
+
+    bool hasMonopoly(const std::string& token, const std::string& blockName);
+
+    bool degradeBuilding(Player* p, AcademicBuilding* ab);  // Sell an improvement
+
 };

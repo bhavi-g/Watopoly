@@ -13,7 +13,6 @@ import <iostream>;
 import <map>;
 import <vector>;
 import LandAction;
-import GameController;  // For future integration of monopoly/rent logic
 
 // Constructor initializes building fields and improvement tracking.
 AcademicBuilding::AcademicBuilding(std::string name, int position, int price,
@@ -28,25 +27,24 @@ std::string AcademicBuilding::getMonopolyBlock() const {
     return monopolyBlock;
 }
 
-// Returns the cost of a single improvement (bathroom/cafeteria).
+void AcademicBuilding::addImprovement() {
+    if (improvements >= 5) throw std::runtime_error("Max improvements reached");
+    ++improvements;
+}
+
+void AcademicBuilding::removeImprovement() {
+    if (improvements <= 0) throw std::runtime_error("No improvements to remove");
+    --improvements;
+}
+
+int AcademicBuilding::getImprovementCount() const {
+    return improvements;
+}
+
 int AcademicBuilding::getImprovementCost() const {
     return improvementCost;
 }
 
-// Returns how many improvements are currently on this building.
-int AcademicBuilding::getImprovements() const {
-    return improvements;
-}
-
-// Adds one improvement to the building, capped at 5.
-void AcademicBuilding::addImprovement() {
-    if (improvements < 5) ++improvements;
-}
-
-// Removes one improvement from the building, bottomed at 0.
-void AcademicBuilding::removeImprovement() {
-    if (improvements > 0) --improvements;
-}
 
 // Defines what happens when a player lands on this academic building.
 // Ownership is checked and appropriate messages are printed.
