@@ -77,5 +77,7 @@ public:
     bool hasMonopoly(const std::string& token, const std::string& blockName);
 
     bool degradeBuilding(Player* p, AcademicBuilding* ab);  // Sell an improvement
-
+    
+    bool mortgageBuilding(Player* p, Building* b);
+    bool unmortgageBuilding(Player* p, Building* b);
 };

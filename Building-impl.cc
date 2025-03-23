@@ -63,3 +63,11 @@ LandAction Building::onLand(Player* p) {
     }
 }
 
+bool Building::isMortgaged() const {
+    return mortgaged;
+}
+
+void Building::setMortgaged(bool state) {
+    mortgaged = state;
+}
+

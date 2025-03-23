@@ -30,6 +30,7 @@ export class Building : public Square {
 private:
     int price;                  // Purchase price of the property
     std::string ownerToken;     // Player token representing current owner ("BANK" if unowned)
+    bool mortgaged = false;  // ✅ NEW: track mortgage status
 
 public:
     // Constructs a building with name, board position, and price.
@@ -52,4 +53,7 @@ public:
     LandAction onLand(Player* p) override;
 
     virtual int calculateRent(int context = 0) const = 0;
+
+    bool isMortgaged() const;
+    void setMortgaged(bool);
 };

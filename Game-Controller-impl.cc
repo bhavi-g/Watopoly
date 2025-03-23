@@ -130,6 +130,11 @@ void GameController::playTurn(Player* p) {
             auto* b = dynamic_cast<Building*>(landed);
             if (!b) break;
 
+            if (b->isMortgaged()) {
+                std::cout << "[Controller]: " << b->getName() << " is mortgaged. No rent collected.\n";
+                break;
+            }
+
             int context = 0;
 
             if (dynamic_cast<Residence*>(b)) {
@@ -147,7 +152,7 @@ void GameController::playTurn(Player* p) {
             p->pay(rent);
             getPlayer(b->getOwnerToken())->receive(rent);
             break;
-}
+        }
 
         case LandAction::Owned:
             std::cout << "[Controller]: You landed on your own property. Nothing to do.\n";
@@ -279,4 +284,69 @@ bool GameController::degradeBuilding(Player* p, AcademicBuilding* ab) {
     return true;
 }
 
+bool GameController::mortgageBuilding(Player* p, Building* b) {
+    if (b->getOwnerToken() != p->getToken()) {
+        std::cout << "[Error] You don't own " << b->getName() << ".\n";
+        return false;
+    }
+
+    if (b->isMortgaged()) {
+        std::cout << "[Error] " << b->getName() << " is already mortgaged.\n";
+        return false;
+    }
+
+    // Check for improvements (only relevant for AcademicBuilding)
+    if (auto* ab = dynamic_cast<AcademicBuilding*>(b)) {
+        if (ab->getImprovementCount() > 0) {
+            std::cout << "[Error] Cannot mortgage a building with improvements.\n";
+            return false;
+        }
+    }
+
+    if (auto* ab = dynamic_cast<AcademicBuilding*>(b)) {
+        std::string block = ab->getMonopolyBlock();
+
+        for (const auto& [name, bldg] : buildings) {
+            auto* other = dynamic_cast<AcademicBuilding*>(bldg);
+            if (other && other->getMonopolyBlock() == block) {
+                if (other->getImprovementCount() > 0) {
+                    std::cout << "[Error] Cannot mortgage: other properties in the block have improvements.\n";
+                    return false;
+                }
+            }
+        }
+    }
+
+
+    b->setMortgaged(true);
+    int value = b->getPrice() / 2;
+    p->receive(value);
+
+    std::cout << "[Success] " << b->getName() << " mortgaged for $" << value << ".\n";
+    return true;
+}
+
+bool GameController::unmortgageBuilding(Player* p, Building* b) {
+    if (b->getOwnerToken() != p->getToken()) {
+        std::cout << "[Error] You don't own " << b->getName() << ".\n";
+        return false;
+    }
+
+    if (!b->isMortgaged()) {
+        std::cout << "[Error] " << b->getName() << " is not mortgaged.\n";
+        return false;
+    }
+
+    int repay = (b->getPrice() / 2) * 1.1;  // 10% interest
+    if (p->getMoney() < repay) {
+        std::cout << "[Error] Not enough money to unmortgage.\n";
+        return false;
+    }
+
+    b->setMortgaged(false);
+    p->pay(repay);
+
+    std::cout << "[Success] " << b->getName() << " unmortgaged for $" << repay << ".\n";
+    return true;
+}
 
