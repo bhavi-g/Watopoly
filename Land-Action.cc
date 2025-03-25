@@ -33,6 +33,6 @@ export enum class LandAction {
     PayTuition,
     PayCoopFee,
     Teleport,
-    MoneyEvent,
+    RandomMoneyChange,
     GoToTims
 };

@@ -20,7 +20,7 @@ import ActionSquares;
 Board::Board() {
     // === Populate all 40 squares in order ===
 
-    squares.push_back(new ActionSquare("Collect OSAP", 0));
+    squares.push_back(new CollectOSAP("Collect OSAP", 0));
     squares.push_back(new AcademicBuilding("AL", 1, 40, "Arts1", 50));
     squares.push_back(new SLC("SLC", 2));
     squares.push_back(new AcademicBuilding("ML", 3, 60, "Arts1", 50));
@@ -30,7 +30,7 @@ Board::Board() {
     squares.push_back(new NeedlesHall("Needles Hall", 7));
     squares.push_back(new AcademicBuilding("PAS", 8, 100, "Arts2", 50));
     squares.push_back(new AcademicBuilding("HH", 9, 120, "Arts2", 50));
-    squares.push_back(new ActionSquare("DC Tims Line", 10));
+    squares.push_back(new DCTimsLine("DC Tims Line", 10));
     squares.push_back(new AcademicBuilding("RCH", 11, 140, "Eng", 100));
     squares.push_back(new Gym("PAC", 12, 150));
     squares.push_back(new AcademicBuilding("DWE", 13, 140, "Eng", 100));
@@ -40,7 +40,7 @@ Board::Board() {
     squares.push_back(new SLC("SLC", 17));
     squares.push_back(new AcademicBuilding("BMH", 18, 180, "Health", 100));
     squares.push_back(new AcademicBuilding("OPT", 19, 200, "Health", 100));
-    squares.push_back(new ActionSquare("Goose Nesting", 20));
+    squares.push_back(new GooseNesting("Goose Nesting", 20));
     squares.push_back(new AcademicBuilding("EV1", 21, 220, "Env", 150));
     squares.push_back(new NeedlesHall("Needles Hall", 22));
     squares.push_back(new AcademicBuilding("EV2", 23, 220, "Env", 150));
@@ -58,7 +58,7 @@ Board::Board() {
     squares.push_back(new Residence("REV", 35, 200));
     squares.push_back(new NeedlesHall("Needles Hall", 36));
     squares.push_back(new AcademicBuilding("MC", 37, 350, "Math", 200));
-    squares.push_back(new ActionSquare("COOP FEE", 38));
+    squares.push_back(new CoopFee("COOP FEE", 38));
     squares.push_back(new AcademicBuilding("DC", 39, 400, "Math", 200));
 }
 

@@ -184,7 +184,7 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
         p->move(steps);
         newPos = p->getPosition();
 
-        if (newPos < oldPos) {
+        if (newPos < oldPos && newPos != 0) {
             std::cout << p->getName() << " passed Collect OSAP and collects $200!\n";
             p->receive(200);
         }
@@ -213,7 +213,7 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
                 std::cout << "[Controller]: " << owner->getName() << " is in jail. No rent collected.\n";
                 break;
             }
-            
+
             int context = 0;
             if (dynamic_cast<Residence*>(b)) {
                 context = getResidenceCount(b->getOwnerToken());
@@ -243,10 +243,153 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
             break;
         }
 
+        case LandAction::RandomMoneyChange:
+            std::cout << "[DEBUG] Controller noted a random money effect occurred (Needles Hall).\n";
+            break;
+
+        case LandAction::PayTuition: {
+            std::cout << "[Tuition] " << p->getName()
+              << " must choose to pay $300 or 10% of total worth.\n";
+    
+            std::cout << "[Controller]: Choose payment method:\n";
+            std::cout << "1. Pay $300\n";
+            std::cout << "2. Pay 10% of total worth\n";
+            std::cout << "Enter choice (1 or 2): ";
+
+            int choice = 1;
+            std::cin >> choice;
+
+            int totalWorth = p->getMoney();
+
+            // Add value of owned buildings
+            for (const auto& [_, building] : buildings) {
+                if (building->getOwnerToken() == p->getToken()) {
+                    totalWorth += building->getPrice();
+                    if (auto* ab = dynamic_cast<AcademicBuilding*>(building)) {
+                        totalWorth += ab->getImprovementCount() * ab->getImprovementCost();
+                    }
+                }
+            }
+
+            if (choice == 2) {
+                int fee = totalWorth / 10;
+                std::cout << "[Tuition] 10% of total worth ($" << totalWorth << ") = $" << fee << ".\n";
+                p->pay(fee);
+            } else {
+                std::cout << "[Tuition] Paying flat $300 fee.\n";
+                p->pay(300);
+            }
+
+            break;
+        }
+
+
+        case LandAction::Teleport: {
+            // Player already moved during SLC; just handle new square
+            Square* newSquare = board->getSquare(p->getPosition());
+            LandAction nestedAction = newSquare->onLand(p);
+
+            // Recursively handle the square landed on after teleport
+            switch (nestedAction) {
+                case LandAction::PromptPurchase: {
+                    if (auto* b = dynamic_cast<Building*>(newSquare)) {
+                        promptPurchase(p, b);
+                    }
+                    break;
+                }
+
+                case LandAction::PayRent: {
+                    auto* b = dynamic_cast<Building*>(newSquare);  // FIXED
+                    if (!b || b->isMortgaged()) break;
+
+                    Player* owner = getPlayer(b->getOwnerToken());
+                    if (!owner) break;
+
+                    if (owner->isInTims()) {
+                        std::cout << "[Controller]: " << owner->getName() << " is in jail. No rent collected.\n";
+                        break;
+                    }
+
+                    int context = 0;
+                    if (dynamic_cast<Residence*>(b)) {
+                        context = getResidenceCount(b->getOwnerToken());
+                    } else if (dynamic_cast<Gym*>(b)) {
+                        context = getGymCount(b->getOwnerToken()) * steps;
+                    }
+
+                    int rent = b->calculateRent(context);
+                    std::cout << "[Controller]: " << p->getName()
+                      << " must pay $" << rent << " in rent.\n";
+
+                    p->pay(rent);
+                    getPlayer(b->getOwnerToken())->receive(rent);
+                    break;
+                }
+
+                case LandAction::Owned:
+                    std::cout << "[Controller]: You landed on your own property. Nothing to do.\n";
+                    break;
+
+                case LandAction::GoToTims:
+                    std::cout << "[Controller]: " << p->getName()
+                      << " has been sent to DC Tims Line (Position 10).\n";
+                    p->moveTo(10);
+                    p->setInTims(true);
+                    p->resetTimsTurns();
+                    skipExtraTurn = true;
+                    break;
+
+                case LandAction::RandomMoneyChange:
+                    std::cout << "[DEBUG] Controller noted a random money effect occurred (Needles Hall).\n";
+                    break;
+
+                case LandAction::PayTuition: {
+                    std::cout << "[Tuition] " << p->getName()
+                        << " must choose to pay $300 or 10% of total worth.\n";
+    
+                    std::cout << "[Controller]: Choose payment method:\n";
+                    std::cout << "1. Pay $300\n";
+                    std::cout << "2. Pay 10% of total worth\n";
+                    std::cout << "Enter choice (1 or 2): ";
+
+                    int choice = 1;
+                    std::cin >> choice;
+
+                    int totalWorth = p->getMoney();
+
+                    // Add value of owned buildings
+                    for (const auto& [_, building] : buildings) {
+                        if (building->getOwnerToken() == p->getToken()) {
+                            totalWorth += building->getPrice();
+                            if (auto* ab = dynamic_cast<AcademicBuilding*>(building)) {
+                                totalWorth += ab->getImprovementCount() * ab->getImprovementCost();
+                            }
+                        }
+                    }
+
+                    if (choice == 2) {
+                        int fee = totalWorth / 10;
+                        std::cout << "[Tuition] 10% of total worth ($" << totalWorth << ") = $" << fee << ".\n";
+                        p->pay(fee);
+                    } else {
+                        std::cout << "[Tuition] Paying flat $300 fee.\n";
+                        p->pay(300);
+                    }
+
+                    break;
+                }
+
+                default:
+                    break;
+            }
+            break;
+        }
+
         default:
             std::cout << "[Controller]: No action required.\n";
             break;
     }
+
 
     // ====== Handle doubles logic ======
     bool extraTurn = (die1 == die2) && !p->isInTims() && !skipExtraTurn;
@@ -264,9 +407,6 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
         }
     }
 }
-
-
-
 
 void GameController::promptPurchase(Player* p, Building* b) {
     std::cout << "[Controller]: Would you like to buy " << b->getName()
