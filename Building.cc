@@ -30,7 +30,7 @@ export class Building : public Square {
 private:
     int price;                  // Purchase price of the property
     std::string ownerToken;     // Player token representing current owner ("BANK" if unowned)
-    bool mortgaged = false;  // ✅ NEW: track mortgage status
+    bool mortgaged = false;  // NEW: track mortgage status
 
 public:
     // Constructs a building with name, board position, and price.
