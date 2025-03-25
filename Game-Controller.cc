@@ -22,6 +22,8 @@ import LandAction;
 import <string>;
 import <map>;
 import <iostream>;
+import <optional>;
+import <utility>;
 import Player;
 import Building;
 import Residence;
@@ -65,7 +67,8 @@ public:
 
     void setBoard(Board* b);  // Inject the board from main
 
-    void playTurn(Player* p);  // Simulates a full roll + move + onLand
+    void playTurn(Player* p, std::optional<std::pair<int, int>> forcedDice = std::nullopt);
+
 
     void promptPurchase(Player* p, Building* b);
 
@@ -77,7 +80,9 @@ public:
     bool hasMonopoly(const std::string& token, const std::string& blockName);
 
     bool degradeBuilding(Player* p, AcademicBuilding* ab);  // Sell an improvement
-    
+
     bool mortgageBuilding(Player* p, Building* b);
     bool unmortgageBuilding(Player* p, Building* b);
+
+    void simulateTurn(Player* p, int die1, int die2);
 };

@@ -89,66 +89,141 @@ void GameController::setBoard(Board* b) {
     }
 }
 
-void GameController::playTurn(Player* p) {
-    // === 1. Roll dice ===
-    int die1 = std::rand() % 6 + 1;
-    int die2 = std::rand() % 6 + 1;
-    int steps = die1 + die2;
+void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forcedDice) {
+    bool skipRoll = false;
+    bool skipExtraTurn = false;
+    bool escapedJail = false;
 
-    std::cout << p->getName() << " rolled " << die1 << " and " << die2
-              << " for a total of " << steps << ".\n";
-
-    // === 2. Move player ===
+    int die1 = 0, die2 = 0, steps = 0;
     int oldPos = p->getPosition();
-    p->move(steps);  // Wraps at 40 automatically
+    int newPos = oldPos;
 
-    int newPos = p->getPosition();
-    Square* landed = board->getSquare(newPos);
+    auto rollDice = [&]() {
+        if (forcedDice) {
+            die1 = forcedDice->first;
+            die2 = forcedDice->second;
+            std::cout << "[TEST] Simulating roll: " << die1 << " and " << die2
+                      << " (Total: " << die1 + die2 << ")\n";
+        } else {
+            die1 = std::rand() % 6 + 1;
+            die2 = std::rand() % 6 + 1;
+        }
+        steps = die1 + die2;
+    };
 
-    // === 3. Handle passing Collect OSAP (position 0) ===
-    if (newPos < oldPos) {
-        std::cout << p->getName() << " passed Collect OSAP and collects $200!\n";
-        p->receive(200);
+    // ====== Jail Logic ======
+    if (p->isInTims()) {
+        std::cout << "[STATUS] " << p->getName()
+                  << " is in DC Tims Line (Turn " << p->getTimsTurns() + 1 << "/3) | "
+                  << "Roll Up Cups: " << p->getRollUpCups() << " | "
+                  << "Money: $" << p->getMoney() << "\n";
+
+        std::string choice;
+
+        if (p->getRollUpCups() > 0) {
+            std::cout << "[Controller]: Use Roll Up the Rim cup? (y/n): ";
+            std::cin >> choice;
+            if (choice == "y" || choice == "Y") {
+                p->useRollUpCup();
+                p->setInTims(false);
+                p->resetTimsTurns();
+                escapedJail = true;
+                std::cout << "[ACTION] Used a Roll Up the Rim cup. Player is now free.\n";
+            }
+        }
+
+        if (!escapedJail && p->getMoney() >= 50) {
+            std::cout << "[Controller]: Pay $50 to get out of Tims? (y/n): ";
+            std::cin >> choice;
+            if (choice == "y" || choice == "Y") {
+                p->pay(50);
+                p->setInTims(false);
+                p->resetTimsTurns();
+                escapedJail = true;
+                std::cout << "[ACTION] Paid $50. Player is now free.\n";
+            }
+        }
+
+        if (!escapedJail && p->isInTims()) {
+            std::cout << "[Controller]: Attempting jail escape with "
+                      << (forcedDice ? "forced roll" : "random roll") << "...\n";
+            rollDice();
+            std::cout << p->getName() << " rolls " << die1 << " and " << die2 << ".\n";
+
+            if (die1 == die2) {
+                std::cout << "[SUCCESS] Doubles! " << p->getName()
+                          << " escapes jail and moves " << steps << " steps.\n";
+                p->move(steps);
+                p->setInTims(false);
+                p->resetTimsTurns();
+                skipRoll = true;
+                skipExtraTurn = true;
+            } else if (p->getTimsTurns() == 2) {
+                std::cout << "[FAIL] Third failed attempt. Paying $50 and moving " << steps << " steps.\n";
+                p->pay(50);
+                p->move(steps);
+                p->setInTims(false);
+                p->resetTimsTurns();
+                skipRoll = true;
+                skipExtraTurn = true;
+            } else {
+                std::cout << "[FAIL] No doubles. Turn skipped.\n";
+                p->incrementTimsTurn();
+                return;
+            }
+        }
     }
 
-    // === 4. Land on square and react based on LandAction ===
+    // ====== Roll if not already moved ======
+    if (!skipRoll) {
+        rollDice();
+        std::cout << p->getName() << " rolled " << die1 << " and " << die2
+                  << " for a total of " << steps << ".\n";
+
+        oldPos = p->getPosition();
+        p->move(steps);
+        newPos = p->getPosition();
+
+        if (newPos < oldPos) {
+            std::cout << p->getName() << " passed Collect OSAP and collects $200!\n";
+            p->receive(200);
+        }
+    }
+
+    // ====== Square effect ======
+    Square* landed = board->getSquare(p->getPosition());
     LandAction action = landed->onLand(p);
 
     switch (action) {
         case LandAction::PromptPurchase: {
-            // Cast to Building* so we can access getPrice/setOwner, etc.
-            Building* b = dynamic_cast<Building*>(landed);
-            if (b) {
+            if (auto* b = dynamic_cast<Building*>(landed)) {
                 promptPurchase(p, b);
-            } else {
-                std::cout << "[Error]: PromptPurchase returned but square is not a Building!\n";
             }
             break;
         }
 
         case LandAction::PayRent: {
             auto* b = dynamic_cast<Building*>(landed);
-            if (!b) break;
+            if (!b || b->isMortgaged()) break;
 
-            if (b->isMortgaged()) {
-                std::cout << "[Controller]: " << b->getName() << " is mortgaged. No rent collected.\n";
+            Player* owner = getPlayer(b->getOwnerToken());
+            if (!owner) break;
+
+            if (owner->isInTims()) {
+                std::cout << "[Controller]: " << owner->getName() << " is in jail. No rent collected.\n";
                 break;
             }
-
+            
             int context = 0;
-
             if (dynamic_cast<Residence*>(b)) {
                 context = getResidenceCount(b->getOwnerToken());
             } else if (dynamic_cast<Gym*>(b)) {
-                int numGymsOwned = getGymCount(b->getOwnerToken());
-                context = numGymsOwned * (die1 + die2);  // Flattened: context = full rent
+                context = getGymCount(b->getOwnerToken()) * steps;
             }
 
             int rent = b->calculateRent(context);
-
             std::cout << "[Controller]: " << p->getName()
-                << " must pay $" << rent << " in rent.\n";
-
+                      << " must pay $" << rent << " in rent.\n";
             p->pay(rent);
             getPlayer(b->getOwnerToken())->receive(rent);
             break;
@@ -158,20 +233,39 @@ void GameController::playTurn(Player* p) {
             std::cout << "[Controller]: You landed on your own property. Nothing to do.\n";
             break;
 
-        case LandAction::CollectOSAP:
-        case LandAction::PayTuition:
-        case LandAction::PayCoopFee:
-        case LandAction::Teleport:
-        case LandAction::MoneyEvent:
-            // These are handled inside onLand() already
+        case LandAction::GoToTims: {
+            std::cout << "[Controller]: " << p->getName()
+                      << " has been sent to DC Tims Line (Position 10).\n";
+            p->moveTo(10);
+            p->setInTims(true);
+            p->resetTimsTurns();
+            skipExtraTurn = true;
             break;
+        }
 
-        case LandAction::None:
         default:
             std::cout << "[Controller]: No action required.\n";
             break;
     }
+
+    // ====== Handle doubles logic ======
+    bool extraTurn = (die1 == die2) && !p->isInTims() && !skipExtraTurn;
+    if (extraTurn) {
+        std::cout << "[Controller]: " << p->getName()
+                  << " rolled doubles and gets another turn!\n";
+
+        if (forcedDice) {
+            int nextDie1, nextDie2;
+            std::cout << "[TEST INPUT]: Enter next dice roll (die1 die2): ";
+            std::cin >> nextDie1 >> nextDie2;
+            playTurn(p, std::pair{nextDie1, nextDie2});
+        } else {
+            playTurn(p);
+        }
+    }
 }
+
+
 
 
 void GameController::promptPurchase(Player* p, Building* b) {
@@ -348,5 +442,154 @@ bool GameController::unmortgageBuilding(Player* p, Building* b) {
 
     std::cout << "[Success] " << b->getName() << " unmortgaged for $" << repay << ".\n";
     return true;
+}
+
+void GameController::simulateTurn(Player* p, int forcedDie1, int forcedDie2) {
+    bool skipRoll = false;
+    bool skipExtraTurn = false;
+    bool escapedJail = false;
+    int die1 = forcedDie1, die2 = forcedDie2, steps = die1 + die2;
+    int oldPos = p->getPosition();
+    int newPos = oldPos;
+
+    std::cout << "[TEST] Simulating roll: " << die1 << " and " << die2
+              << " (Total: " << steps << ")\n";
+
+    if (p->isInTims()) {
+        std::cout << "[STATUS] " << p->getName()
+            << " is in DC Tims Line (Turn " << p->getTimsTurns() + 1 << "/3) | "
+            << "Roll Up Cups: " << p->getRollUpCups() << " | "
+            << "Money: $" << p->getMoney() << "\n";
+
+        std::string choice;
+
+        // === Option 1: Use Roll Up the Rim Cup ===
+        if (p->getRollUpCups() > 0) {
+            std::cout << "[Controller]: Use Roll Up the Rim cup? (y/n): ";
+            std::cin >> choice;
+            if (choice == "y" || choice == "Y") {
+                p->useRollUpCup();
+                p->setInTims(false);
+                p->resetTimsTurns();
+                escapedJail = true;
+                std::cout << "[ACTION] Used a Roll Up the Rim cup. Player is now free.\n";
+            }
+        }
+
+        // === Option 2: Pay $50 to escape early ===
+        if (!escapedJail && p->getMoney() >= 50) {
+            std::cout << "[Controller]: Pay $50 to get out of Tims? (y/n): ";
+            std::cin >> choice;
+            if (choice == "y" || choice == "Y") {
+                p->pay(50);
+                p->setInTims(false);
+                p->resetTimsTurns();
+                escapedJail = true;
+                std::cout << "[ACTION] Paid $50. Player is now free.\n";
+            }
+        }
+
+        // === Option 3: Try to roll doubles ===
+        if (!escapedJail && p->isInTims()) {
+            std::cout << "[Controller]: Attempting jail escape with forced roll...\n";
+            std::cout << p->getName() << " rolls " << die1 << " and " << die2 << ".\n";
+
+            if (die1 == die2) {
+                std::cout << "[SUCCESS] Doubles! " << p->getName()
+                    << " escapes jail and moves " << (die1 + die2) << " steps.\n";
+                p->move(die1 + die2);
+                p->setInTims(false);
+                p->resetTimsTurns();
+
+                skipRoll = true;
+                skipExtraTurn = true;
+            } else if (p->getTimsTurns() == 2) {
+                std::cout << "[FAIL] Third failed attempt. Paying $50 and moving " << (die1 + die2) << " steps.\n";
+                p->pay(50);
+                p->move(die1 + die2);
+                p->setInTims(false);
+                p->resetTimsTurns();
+
+                skipRoll = true;
+                skipExtraTurn = true;
+            } else {
+                std::cout << "[FAIL] No doubles. Turn skipped.\n";
+                p->incrementTimsTurn();
+                return;  // End turn
+            }
+        }
+    }
+
+    if (!skipRoll) {
+        oldPos = p->getPosition();
+        p->move(steps);
+        newPos = p->getPosition();
+
+        if (newPos < oldPos) {
+            std::cout << p->getName() << " passed Collect OSAP and collects $200!\n";
+            p->receive(200);
+        }
+    }
+
+    Square* landed = board->getSquare(p->getPosition());
+    LandAction action = landed->onLand(p);
+
+    switch (action) {
+        case LandAction::PromptPurchase: {
+            if (auto* b = dynamic_cast<Building*>(landed)) {
+                promptPurchase(p, b);
+            }
+            break;
+        }
+
+        case LandAction::PayRent: {
+            auto* b = dynamic_cast<Building*>(landed);
+            if (!b || b->isMortgaged()) break;
+
+            int context = 0;
+            if (dynamic_cast<Residence*>(b)) {
+                context = getResidenceCount(b->getOwnerToken());
+            } else if (dynamic_cast<Gym*>(b)) {
+                context = getGymCount(b->getOwnerToken()) * steps;
+            }
+
+            int rent = b->calculateRent(context);
+            std::cout << "[Controller]: " << p->getName()
+                      << " must pay $" << rent << " in rent.\n";
+            p->pay(rent);
+            getPlayer(b->getOwnerToken())->receive(rent);
+            break;
+        }
+
+        case LandAction::Owned:
+            std::cout << "[Controller]: You landed on your own property. Nothing to do.\n";
+            break;
+
+        case LandAction::GoToTims: {
+            std::cout << "[Controller]: " << p->getName()
+                      << " has been sent to DC Tims Line (Position 10).\n";
+            p->moveTo(10);
+            p->setInTims(true);
+            p->resetTimsTurns();
+            skipExtraTurn = true;
+            break;
+        }
+
+        default:
+            std::cout << "[Controller]: No action required.\n";
+            break;
+    }
+
+    bool extraTurn = (die1 == die2) && !p->isInTims() && !skipExtraTurn;
+    if (extraTurn) {
+        std::cout << "[Controller]: " << p->getName()
+            << " rolled doubles and gets another turn!\n";
+
+        int nextDie1, nextDie2;
+        std::cout << "[TEST INPUT]: Enter next dice roll (die1 die2): ";
+        std::cin >> nextDie1 >> nextDie2;
+
+        simulateTurn(p, nextDie1, nextDie2);
+    }
 }
 

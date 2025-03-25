@@ -25,6 +25,10 @@ private:
     int money;                                // Player's current balance
     std::vector<std::string> ownedBuildings;  // List of names of owned properties
     int position = 0; // Default starting position
+    bool inTims = false;
+    int timsTurns = 0;
+    int rollUpCups = 0;  // 🥤 "Get Out of Jail Free" cards
+
 
 public:
     // Constructs a player with a given name, token, and optional starting money.
@@ -64,5 +68,21 @@ public:
     void moveTo(int newPosition);
 
     void setMoney(int newAmount);
+
+    bool isInTims() const;
+
+    void setInTims(bool);
+
+    int getTimsTurns() const;
+
+    void incrementTimsTurn();
+
+    void resetTimsTurns();
+
+    int getRollUpCups() const;
+
+    void addRollUpCup();
+    
+    void useRollUpCup();
 
 };

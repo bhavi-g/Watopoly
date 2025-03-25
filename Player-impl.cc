@@ -89,3 +89,28 @@ void Player::setMoney(int newAmount) {
     money = newAmount;
 }
 
+bool Player::isInTims() const {
+    return inTims;
+}
+
+void Player::setInTims(bool value) {
+    inTims = value;
+}
+
+int Player::getTimsTurns() const {
+    return timsTurns;
+}
+
+void Player::incrementTimsTurn() {
+    ++timsTurns;
+}
+
+void Player::resetTimsTurns() {
+    timsTurns = 0;
+}
+
+int Player::getRollUpCups() const { return rollUpCups; }
+void Player::addRollUpCup() { ++rollUpCups; }
+void Player::useRollUpCup() {
+    if (rollUpCups > 0) --rollUpCups;
+}

@@ -101,3 +101,9 @@ public:
     CoopFee(std::string name, int position);
     LandAction onLand(Player* p) override;
 };
+
+export class GoToTims : public Square {
+public:
+    GoToTims(std::string name, int position);
+    LandAction onLand(Player* p) override;
+};

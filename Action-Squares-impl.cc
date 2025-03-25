@@ -23,6 +23,27 @@ LandAction ActionSquare::onLand(Player* p) {
     return LandAction::None;
 }
 
+// -------- CollectOSAP --------
+CollectOSAP::CollectOSAP(std::string name, int position)
+    : Square{name, position} {}
+
+LandAction CollectOSAP::onLand(Player* p) {
+    std::cout << p->getName() << " landed on " << getName()
+              << " and collected $200 from OSAP.\n";
+    p->receive(200);
+    return LandAction::CollectOSAP;
+}
+
+// -------- Tuition --------
+Tuition::Tuition(std::string name, int position)
+    : Square{name, position} {}
+
+LandAction Tuition::onLand(Player* p) {
+    std::cout << p->getName() << " landed on " << getName()
+              << " and must pay $300 or 10% of total worth.\n";
+    return LandAction::PayTuition;
+}
+
 // -------- NeedlesHall --------
 NeedlesHall::NeedlesHall(std::string name, int position)
     : Square{name, position} {}
@@ -41,27 +62,6 @@ LandAction SLC::onLand(Player* p) {
     std::cout << p->getName() << " landed on " << getName()
               << " and is teleported somewhere else on the board.\n";
     return LandAction::Teleport;
-}
-
-// -------- Tuition --------
-Tuition::Tuition(std::string name, int position)
-    : Square{name, position} {}
-
-LandAction Tuition::onLand(Player* p) {
-    std::cout << p->getName() << " landed on " << getName()
-              << " and must pay $300 or 10% of total worth.\n";
-    return LandAction::PayTuition;
-}
-
-// -------- CollectOSAP --------
-CollectOSAP::CollectOSAP(std::string name, int position)
-    : Square{name, position} {}
-
-LandAction CollectOSAP::onLand(Player* p) {
-    std::cout << p->getName() << " landed on " << getName()
-              << " and collected $200 from OSAP.\n";
-    p->receive(200);
-    return LandAction::CollectOSAP;
 }
 
 // -------- DCTimsLine --------
@@ -93,4 +93,15 @@ LandAction CoopFee::onLand(Player* p) {
               << " and must pay the $150 Coop Fee.\n";
     p->pay(150);
     return LandAction::PayCoopFee;
+}
+
+// -------- GoToTims --------
+GoToTims::GoToTims(std::string name, int position)
+    : Square{name, position} {}
+
+LandAction GoToTims::onLand(Player* p) {
+    std::cout << p->getName() << " landed on " << getName()
+              << " and is sent directly to DC Tims Line.\n";
+              
+    return LandAction::GoToTims;
 }

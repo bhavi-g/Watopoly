@@ -50,7 +50,7 @@ Board::Board() {
     squares.push_back(new AcademicBuilding("B1", 27, 260, "Sci1", 150));
     squares.push_back(new Gym("CIF", 28, 150));
     squares.push_back(new AcademicBuilding("B2", 29, 280, "Sci1", 150));
-    squares.push_back(new ActionSquare("GO TO TIMS", 30));
+    squares.push_back(new GoToTims("GO TO TIMS", 30));
     squares.push_back(new AcademicBuilding("EIT", 31, 300, "Sci2", 200));
     squares.push_back(new AcademicBuilding("ESC", 32, 300, "Sci2", 200));
     squares.push_back(new SLC("SLC", 33));
