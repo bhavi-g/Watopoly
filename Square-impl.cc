@@ -17,3 +17,4 @@ std::string Square::getName() const {
 int Square::getPosition() const {
     return position;
 }
+
