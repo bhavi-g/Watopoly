@@ -95,6 +95,8 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
     bool escapedJail = false;
 
     int die1 = 0, die2 = 0, steps = 0;
+    static int doublesStreak = 0;
+
     int oldPos = p->getPosition();
     int newPos = oldPos;
 
@@ -179,6 +181,20 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
         rollDice();
         std::cout << p->getName() << " rolled " << die1 << " and " << die2
                   << " for a total of " << steps << ".\n";
+
+        if (die1 == die2) {
+            ++doublesStreak;
+            if (doublesStreak == 3) {
+                std::cout << "[RULE] " << p->getName() << " rolled 3 consecutive doubles. Go to DC Tims Line!\n";
+                p->moveTo(10);
+                p->setInTims(true);
+                p->resetTimsTurns();
+                doublesStreak = 0;
+                return;
+            }
+        } else {
+            doublesStreak = 0;
+        }
 
         oldPos = p->getPosition();
         p->move(steps);
