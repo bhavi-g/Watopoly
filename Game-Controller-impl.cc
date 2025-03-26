@@ -13,6 +13,8 @@
 module GameController;
 import <random>;
 import <ctime>;
+import <algorithm>;  // For std::all_of
+import <cctype>;     // For ::isdigit
 import LandAction;
 import Square;
 
@@ -46,36 +48,132 @@ Building* GameController::getBuilding(const std::string& name) const {
 //   - Both players exist
 //   - Both buildings exist
 //   - Each player owns the building they are offering
-void GameController::trade(const std::string& fromToken, const std::string& giveB,
-                           const std::string& toToken, const std::string& receiveB) {
-    auto* fromPlayer = getPlayer(fromToken);
-    auto* toPlayer = getPlayer(toToken);
-    auto* give = getBuilding(giveB);
-    auto* receive = getBuilding(receiveB);
+void GameController::trade(const std::string& fromToken, const std::string& giveStr,
+                           const std::string& toToken, const std::string& receiveStr) {
+    Player* fromPlayer = getPlayer(fromToken);
+    Player* toPlayer = getPlayer(toToken);
 
-    if (!fromPlayer || !toPlayer || !give || !receive) {
-        std::cout << "Trade failed: invalid player or building.\n";
+    if (!fromPlayer || !toPlayer) {
+        std::cout << "[Error] Invalid player token.\n";
         return;
     }
 
-    if (give->getOwnerToken() != fromToken || receive->getOwnerToken() != toToken) {
-        std::cout << "Trade failed: ownership mismatch.\n";
+    auto isPositiveNumber = [](const std::string& s) {
+        return !s.empty() && std::all_of(s.begin(), s.end(), ::isdigit);
+    };
+
+    bool giveIsMoney = isPositiveNumber(giveStr);
+    bool receiveIsMoney = isPositiveNumber(receiveStr);
+
+    if (giveIsMoney && receiveIsMoney) {
+        std::cout << "[Error] Cannot trade money for money.\n";
         return;
     }
 
-    // Perform ownership transfer
-    give->setOwnerToken(toToken);
-    receive->setOwnerToken(fromToken);
+    auto* giveBuilding = getBuilding(giveStr);
+    if (!giveIsMoney) {
+        if (!giveBuilding || giveBuilding->getOwnerToken() != fromToken) {
+            std::cout << "[Error] You do not own the property \"" << giveStr << "\" or it doesn't exist.\n";
+            return;
+        }
 
-    // Update each player's property list
-    fromPlayer->removeProperty(giveB);
-    fromPlayer->addProperty(receiveB);
-    toPlayer->removeProperty(receiveB);
-    toPlayer->addProperty(giveB);
+        if (auto* ab = dynamic_cast<AcademicBuilding*>(giveBuilding)) {
+            std::string block = ab->getMonopolyBlock();
+            for (const auto& [_, bldg] : buildings) {
+                auto* other = dynamic_cast<AcademicBuilding*>(bldg);
+                if (other && other->getMonopolyBlock() == block && other->getImprovementCount() > 0) {
+                    std::cout << "[Error] Cannot trade \"" << giveStr << "\" because it or another property in its monopoly has improvements.\n";
+                    return;
+                }
+            }
+        }
+    }
 
-    std::cout << fromToken << " traded " << giveB << " for " << receiveB
-              << " with " << toToken << "!\n";
+    auto* receiveBuilding = getBuilding(receiveStr);
+    if (!receiveIsMoney) {
+        if (!receiveBuilding || receiveBuilding->getOwnerToken() != toToken) {
+            std::cout << "[Error] The player \"" << toToken << "\" does not own \"" << receiveStr << "\" or it doesn't exist.\n";
+            return;
+        }
+
+        if (auto* ab = dynamic_cast<AcademicBuilding*>(receiveBuilding)) {
+            std::string block = ab->getMonopolyBlock();
+            for (const auto& [_, bldg] : buildings) {
+                auto* other = dynamic_cast<AcademicBuilding*>(bldg);
+                if (other && other->getMonopolyBlock() == block && other->getImprovementCount() > 0) {
+                    std::cout << "[Error] Cannot receive \"" << receiveStr << "\" because it or another property in its monopoly has improvements.\n";
+                    return;
+                }
+            }
+        }
+    }
+
+    if (giveIsMoney) {
+        int amount = std::stoi(giveStr);
+        if (fromPlayer->getMoney() < amount) {
+            std::cout << "[Error] Not enough funds to offer $" << amount << ".\n";
+            return;
+        }
+    }
+
+    if (receiveIsMoney) {
+        int amount = std::stoi(receiveStr);
+        if (toPlayer->getMoney() < amount) {
+            std::cout << "[Error] " << toPlayer->getName() << " does not have $" << amount << ".\n";
+            return;
+        }
+    }
+
+    std::cout << "[Offer] " << fromPlayer->getName() << " offers ";
+    if (giveIsMoney) {
+        std::cout << "$" << giveStr;
+    } else {
+        std::cout << "property " << giveStr;
+    }
+    std::cout << " in exchange for ";
+    if (receiveIsMoney) {
+        std::cout << "$" << receiveStr;
+    } else {
+        std::cout << "property " << receiveStr;
+    }
+    std::cout << ".\n";
+
+    std::cout << toPlayer->getName() << ", do you accept the trade offer from "
+              << fromPlayer->getName() << "? (y/n): ";
+
+    std::string response;
+    std::cin >> response;
+
+    if (response != "y" && response != "Y") {
+        std::cout << "[Trade] Offer rejected.\n";
+        return;
+    }
+
+    if (giveIsMoney) {
+        int amount = std::stoi(giveStr);
+        fromPlayer->pay(amount);
+        toPlayer->receive(amount);
+    } else {
+        fromPlayer->removeProperty(giveStr);
+        toPlayer->addProperty(giveStr);
+        getBuilding(giveStr)->setOwnerToken(toToken);
+    }
+
+    if (receiveIsMoney) {
+        int amount = std::stoi(receiveStr);
+        toPlayer->pay(amount);
+        fromPlayer->receive(amount);
+    } else {
+        toPlayer->removeProperty(receiveStr);
+        fromPlayer->addProperty(receiveStr);
+        getBuilding(receiveStr)->setOwnerToken(fromToken);
+    }
+
+    std::cout << "[Trade] " << fromPlayer->getName() << " traded " << giveStr
+              << " with " << toPlayer->getName() << " for " << receiveStr << ".\n";
 }
+
+
 
 void GameController::setBoard(Board* b) {
     board = b;

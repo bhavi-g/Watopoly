@@ -19,4 +19,4 @@ Game-Controller-impl.cc
 Action-Squares-impl.cc
 Board-impl.cc
 
-test-doubles.cc
+test-trade.cc

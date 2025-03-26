@@ -23,6 +23,7 @@ int main() {
 
     // First double
     controller.playTurn(vyomm, std::pair{2, 2});  // triggers bonus turn 1
+     controller.playTurn(vyomm, std::pair{2, 3});  // triggers bonus turn 1
 
     // BONUS TURN 1: another double
     // [input]: 3 3 → triggers bonus turn 2
