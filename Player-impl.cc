@@ -116,5 +116,13 @@ void Player::useRollUpCup() {
 }
 
 bool Player::isBankrupt() const {
-    return false; // 🔧 TEMPORARY: We'll handle actual bankruptcy logic later
+    return bankrupt; 
+}
+
+void Player::setBankrupt(bool value) {
+    bankrupt = value;
+}
+
+void Player::setRollUpCups(int count) {
+    rollUpCups = count;
 }

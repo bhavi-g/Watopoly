@@ -26,6 +26,7 @@ private:
     std::vector<std::string> ownedBuildings;  // List of names of owned properties
     int position = 0; // Default starting position
     bool inTims = false;
+    bool bankrupt = false;
     int timsTurns = 0;
     int rollUpCups = 0;  // 🥤 "Get Out of Jail Free" cards
 
@@ -87,4 +88,7 @@ public:
 
     bool isBankrupt() const;
 
+    void setBankrupt(bool value);
+
+    void setRollUpCups(int count);
 };

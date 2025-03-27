@@ -87,4 +87,8 @@ public:
 
     void simulateTurn(Player* p, int die1, int die2);
     void handleAuction(Building* b);
+    void declareBankruptcy(Player* debtor, Player* creditor);
+    bool enforcePayment(Player* debtor, int amount, Player* creditor = nullptr);
+    bool attemptToRaiseFunds(Player* p, int amountOwed);
+
 };

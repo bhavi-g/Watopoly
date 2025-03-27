@@ -64,7 +64,7 @@ LandAction AcademicBuilding::onLand(Player* p) {
     }
 }
 
-int AcademicBuilding::calculateRent(int /*context*/) const {
+int AcademicBuilding::calculateRent(int context) const {
     // Rent depends only on improvements
     static const std::map<std::string, std::vector<int>> rentTable = {
         { "AL", {2, 10, 30, 90, 160, 250} },
@@ -93,6 +93,10 @@ int AcademicBuilding::calculateRent(int /*context*/) const {
 
     auto it = rentTable.find(getName());
     if (it == rentTable.end()) return 0;
+
+    if (context == 1 && improvements == 0) {
+        return it->second[0] * 2;
+    }
 
     return it->second[improvements];  // 0–5
 }

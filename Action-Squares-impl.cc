@@ -49,24 +49,7 @@ NeedlesHall::NeedlesHall(std::string name, int position)
     : Square{name, position} {}
 
 LandAction NeedlesHall::onLand(Player* p) {
-    int roll = std::rand() % 18;  // 0 to 17
-    int delta = 0;
-
-    if (roll == 0) delta = -200;
-    else if (roll <= 2) delta = -100;      // 1,2 → 2/18 = 1/9
-    else if (roll <= 5) delta = -50;       // 3,4,5 → 3/18 = 1/6
-    else if (roll <= 11) delta = 25;       // 6–11 → 6/18 = 1/3
-    else if (roll <= 14) delta = 50;       // 12,13,14 → 3/18 = 1/6
-    else if (roll <= 16) delta = 100;      // 15,16 → 2/18 = 1/9
-    else delta = 200;                      // 17 → 1/18
-
-    std::cout << p->getName() << " landed on " << getName()
-              << " and received a financial change of " << delta << ".\n";
-
-    if (delta >= 0) p->receive(delta);
-    else p->pay(-delta);
-
-    return LandAction::RandomMoneyChange;
+    return LandAction::NeedlesHall;
 }
 
 // -------- SLC --------
@@ -147,9 +130,6 @@ CoopFee::CoopFee(std::string name, int position)
     : Square{name, position} {}
 
 LandAction CoopFee::onLand(Player* p) {
-    std::cout << p->getName() << " landed on " << getName()
-              << " and must pay the $150 Coop Fee.\n";
-    p->pay(150);
     return LandAction::PayCoopFee;
 }
 

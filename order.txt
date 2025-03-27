@@ -20,4 +20,4 @@ Game-Controller-impl.cc
 Action-Squares-impl.cc
 Board-impl.cc
 
-test-auction.cc
+test-bankrupt.cc

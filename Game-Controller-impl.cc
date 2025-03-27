@@ -236,7 +236,7 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
             std::cout << "[Controller]: Pay $50 to get out of Tims? (y/n): ";
             std::cin >> choice;
             if (choice == "y" || choice == "Y") {
-                p->pay(50);
+                enforcePayment(p, 50); // Enforcing chill as we have funds
                 p->setInTims(false);
                 p->resetTimsTurns();
                 escapedJail = true;
@@ -260,7 +260,7 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
                 skipExtraTurn = true;
             } else if (p->getTimsTurns() == 2) {
                 std::cout << "[FAIL] Third failed attempt. Paying $50 and moving " << steps << " steps.\n";
-                p->pay(50);
+                enforcePayment(p, 50);
                 p->move(steps);
                 p->setInTims(false);
                 p->resetTimsTurns();
@@ -333,13 +333,17 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
                 context = getResidenceCount(b->getOwnerToken());
             } else if (dynamic_cast<Gym*>(b)) {
                 context = getGymCount(b->getOwnerToken()) * steps;
+            } else if (auto* ab = dynamic_cast<AcademicBuilding*>(b)) {
+                if (hasMonopoly(ab->getOwnerToken(), ab->getMonopolyBlock()) &&
+                ab->getImprovementCount() == 0) {
+                context = 1;  // signal double rent
+                }
             }
 
             int rent = b->calculateRent(context);
             std::cout << "[Controller]: " << p->getName()
                       << " must pay $" << rent << " in rent.\n";
-            p->pay(rent);
-            getPlayer(b->getOwnerToken())->receive(rent);
+            enforcePayment(p, rent, owner);
             break;
         }
 
@@ -357,14 +361,31 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
             break;
         }
 
-        case LandAction::RandomMoneyChange:
-            std::cout << "[DEBUG] Controller noted a random money effect occurred (Needles Hall).\n";
+        case LandAction::NeedlesHall: {
+            int roll = std::rand() % 18;
+            int delta = 0;
+
+            if (roll == 0) delta = -200;
+            else if (roll <= 2) delta = -100;
+            else if (roll <= 5) delta = -50;
+            else if (roll <= 11) delta = 25;
+            else if (roll <= 14) delta = 50;
+            else if (roll <= 16) delta = 100;
+            else delta = 200;
+
+            std::cout << p->getName() << " landed on " << landed->getName()
+                      << " and received a financial change of " << delta << ".\n";
+
+            if (delta >= 0) p->receive(delta);
+            else enforcePayment(p, -delta);
+
             break;
+        }
 
         case LandAction::PayTuition: {
             std::cout << "[Tuition] " << p->getName()
-              << " must choose to pay $300 or 10% of total worth.\n";
-    
+                      << " must choose to pay $300 or 10% of total worth.\n";
+
             std::cout << "[Controller]: Choose payment method:\n";
             std::cout << "1. Pay $300\n";
             std::cout << "2. Pay 10% of total worth\n";
@@ -374,8 +395,6 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
             std::cin >> choice;
 
             int totalWorth = p->getMoney();
-
-            // Add value of owned buildings
             for (const auto& [_, building] : buildings) {
                 if (building->getOwnerToken() == p->getToken()) {
                     totalWorth += building->getPrice();
@@ -388,114 +407,19 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
             if (choice == 2) {
                 int fee = totalWorth / 10;
                 std::cout << "[Tuition] 10% of total worth ($" << totalWorth << ") = $" << fee << ".\n";
-                p->pay(fee);
+                enforcePayment(p, fee);
             } else {
                 std::cout << "[Tuition] Paying flat $300 fee.\n";
-                p->pay(300);
+                enforcePayment(p, 300);
             }
 
             break;
         }
 
-
-        case LandAction::Teleport: {
-            // Player already moved during SLC; just handle new square
-            Square* newSquare = board->getSquare(p->getPosition());
-            LandAction nestedAction = newSquare->onLand(p);
-
-            // Recursively handle the square landed on after teleport
-            switch (nestedAction) {
-                case LandAction::PromptPurchase: {
-                    if (auto* b = dynamic_cast<Building*>(newSquare)) {
-                        promptPurchase(p, b);
-                    }
-                    break;
-                }
-
-                case LandAction::PayRent: {
-                    auto* b = dynamic_cast<Building*>(newSquare);  // FIXED
-                    if (!b || b->isMortgaged()) break;
-
-                    Player* owner = getPlayer(b->getOwnerToken());
-                    if (!owner) break;
-
-                    if (owner->isInTims()) {
-                        std::cout << "[Controller]: " << owner->getName() << " is in jail. No rent collected.\n";
-                        break;
-                    }
-
-                    int context = 0;
-                    if (dynamic_cast<Residence*>(b)) {
-                        context = getResidenceCount(b->getOwnerToken());
-                    } else if (dynamic_cast<Gym*>(b)) {
-                        context = getGymCount(b->getOwnerToken()) * steps;
-                    }
-
-                    int rent = b->calculateRent(context);
-                    std::cout << "[Controller]: " << p->getName()
-                      << " must pay $" << rent << " in rent.\n";
-
-                    p->pay(rent);
-                    getPlayer(b->getOwnerToken())->receive(rent);
-                    break;
-                }
-
-                case LandAction::Owned:
-                    std::cout << "[Controller]: You landed on your own property. Nothing to do.\n";
-                    break;
-
-                case LandAction::GoToTims:
-                    std::cout << "[Controller]: " << p->getName()
-                      << " has been sent to DC Tims Line (Position 10).\n";
-                    p->moveTo(10);
-                    p->setInTims(true);
-                    p->resetTimsTurns();
-                    skipExtraTurn = true;
-                    break;
-
-                case LandAction::RandomMoneyChange:
-                    std::cout << "[DEBUG] Controller noted a random money effect occurred (Needles Hall).\n";
-                    break;
-
-                case LandAction::PayTuition: {
-                    std::cout << "[Tuition] " << p->getName()
-                        << " must choose to pay $300 or 10% of total worth.\n";
-    
-                    std::cout << "[Controller]: Choose payment method:\n";
-                    std::cout << "1. Pay $300\n";
-                    std::cout << "2. Pay 10% of total worth\n";
-                    std::cout << "Enter choice (1 or 2): ";
-
-                    int choice = 1;
-                    std::cin >> choice;
-
-                    int totalWorth = p->getMoney();
-
-                    // Add value of owned buildings
-                    for (const auto& [_, building] : buildings) {
-                        if (building->getOwnerToken() == p->getToken()) {
-                            totalWorth += building->getPrice();
-                            if (auto* ab = dynamic_cast<AcademicBuilding*>(building)) {
-                                totalWorth += ab->getImprovementCount() * ab->getImprovementCost();
-                            }
-                        }
-                    }
-
-                    if (choice == 2) {
-                        int fee = totalWorth / 10;
-                        std::cout << "[Tuition] 10% of total worth ($" << totalWorth << ") = $" << fee << ".\n";
-                        p->pay(fee);
-                    } else {
-                        std::cout << "[Tuition] Paying flat $300 fee.\n";
-                        p->pay(300);
-                    }
-
-                    break;
-                }
-
-                default:
-                    break;
-            }
+        case LandAction::PayCoopFee: {
+            std::cout << p->getName() << " landed on " << landed->getName()
+                      << " and must pay the $150 Coop Fee.\n";
+            enforcePayment(p, 150);
             break;
         }
 
@@ -504,8 +428,6 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
             break;
     }
 
-
-    // ====== Handle doubles logic ======
     bool extraTurn = (die1 == die2) && !p->isInTims() && !skipExtraTurn;
     if (extraTurn) {
         std::cout << "[Controller]: " << p->getName()
@@ -521,6 +443,7 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
         }
     }
 }
+
 
 void GameController::promptPurchase(Player* p, Building* b) {
     std::cout << "[Controller]: Would you like to buy " << b->getName()
@@ -945,5 +868,195 @@ void GameController::handleAuction(Building* b) {
     std::cout << "[Auction] " << highestBidder->getName()
               << " wins the auction for " << b->getName()
               << " at $" << highestBid << "!\n";
+}
+
+void GameController::declareBankruptcy(Player* debtor, Player* creditor) {
+    std::cout << "[BANKRUPTCY] " << debtor->getName()
+              << " is declaring bankruptcy"
+              << (creditor ? " to " + creditor->getName() : " to the Bank") << ".\n";
+
+    // === Transfer all properties ===
+    for (auto& [name, b] : buildings) {
+        if (b->getOwnerToken() != debtor->getToken()) continue;
+
+        if (creditor) {
+            // Bankruptcy to another player
+            b->setOwnerToken(creditor->getToken());
+            creditor->addProperty(name);
+            debtor->removeProperty(name);
+
+            std::cout << "[TRANSFER] " << name << " transferred to " << creditor->getName() << ".\n";
+
+            if (b->isMortgaged()) {
+                int interest = b->getPrice() / 10; // 10%
+                std::cout << "[MORTGAGED] " << name << " is mortgaged. "
+                          << creditor->getName() << " must pay $"
+                          << interest << " in interest to the Bank.\n";
+                creditor->pay(interest);
+            }
+        } else {
+            // Bankruptcy to the Bank — return to open market
+            b->setOwnerToken("BANK");
+            b->setMortgaged(false);
+            debtor->removeProperty(name);
+            std::cout << "[RESET] " << name << " returned to Bank.\n";
+        }
+    }
+
+    // === Transfer or destroy roll-up cups ===
+    int cups = debtor->getRollUpCups();
+    if (creditor) {
+        for (int i = 0; i < cups; ++i) {
+            creditor->addRollUpCup();
+        }
+        std::cout << "[TRANSFER] " << cups << " Roll Up the Rim cup(s) transferred.\n";
+    } else {
+        std::cout << "[DESTROY] " << cups << " Roll Up the Rim cup(s) destroyed.\n";
+    }
+    debtor->setRollUpCups(0);
+
+    // === Transfer remaining money (if any) ===
+    int moneyLeft = debtor->getMoney();
+    if (creditor && moneyLeft > 0) {
+        debtor->pay(moneyLeft);
+        creditor->receive(moneyLeft);
+        std::cout << "[TRANSFER] $" << moneyLeft << " transferred to " << creditor->getName() << ".\n";
+    }
+
+    // === Mark debtor as bankrupt ===
+    debtor->setBankrupt(true);
+    std::cout << "[STATUS] " << debtor->getName() << " is now out of the game.\n";
+}
+
+bool GameController::enforcePayment(Player* debtor, int amount, Player* creditor) {
+    if (debtor->getMoney() >= amount) {
+        debtor->pay(amount);
+        if (creditor) creditor->receive(amount);
+        return true;
+    }
+
+    std::cout << "[Bankruptcy Check] " << debtor->getName() << " can't afford to pay $" << amount << ".\n";
+    
+    bool rescued = attemptToRaiseFunds(debtor, amount);
+
+    if (rescued) {
+        std::cout << "[Recovery] " << debtor->getName() << " raised enough money. Paying...\n";
+        debtor->pay(amount);
+        if (creditor) creditor->receive(amount);
+        return true;
+    }
+
+    std::cout << "[Bankruptcy] " << debtor->getName() << " is declaring bankruptcy!\n";
+    declareBankruptcy(debtor, creditor);
+    return false;
+}
+
+bool GameController::attemptToRaiseFunds(Player* p, int amountOwed) {
+    std::cout << "\n💸 [Bankruptcy Warning] " << p->getName() << " owes $" << amountOwed << ".\n";
+    std::cout << "💰 Current funds: $" << p->getMoney() << "\n";
+    int deficit = amountOwed - p->getMoney();
+    if (deficit <= 0) {
+        std::cout << " You already have enough funds. No need to raise money.\n";
+        return true;
+    }
+
+    std::cout << "❗ You are short by $" << deficit << ". You must raise funds manually.\n";
+
+    while (p->getMoney() < amountOwed) {
+        std::vector<AcademicBuilding*> improvable;
+        std::vector<Building*> mortgageable;
+
+        for (const auto& [name, b] : buildings) {
+            if (b->getOwnerToken() != p->getToken()) continue;
+
+            if (auto* ab = dynamic_cast<AcademicBuilding*>(b)) {
+                if (ab->getImprovementCount() > 0) {
+                    improvable.push_back(ab);
+                }
+            }
+
+            if (!b->isMortgaged()) {
+                auto* ab = dynamic_cast<AcademicBuilding*>(b);
+                if (!ab || ab->getImprovementCount() == 0) {
+                    mortgageable.push_back(b);
+                }
+            }
+        }
+
+        std::cout << "\n💸 [Liquidation Menu] Funds: $" << p->getMoney()
+                  << " | Owe: $" << amountOwed << " | Remaining: $" << (amountOwed - p->getMoney()) << "\n";
+        std::cout << "Choose an action:\n";
+        std::cout << "1. Sell an Improvement\n";
+        std::cout << "2. Mortgage a Property\n";
+        std::cout << "3. Quit and declare bankruptcy\n";
+        std::cout << "Enter your choice (1-3): ";
+
+        int choice;
+        std::cin >> choice;
+
+        if (choice == 1) {
+            if (improvable.empty()) {
+                std::cout << "[Error] No buildings with improvements to sell.\n";
+                continue;
+            }
+
+            std::cout << "\n[Improvements Available to Sell]\n";
+            for (size_t i = 0; i < improvable.size(); ++i) {
+                std::cout << i + 1 << ". " << improvable[i]->getName()
+                          << " (" << improvable[i]->getImprovementCount()
+                          << " improvements at $" << improvable[i]->getImprovementCost() / 2 << " each)\n";
+            }
+
+            std::cout << "Choose which building to sell 1 improvement from (1-" << improvable.size() << "): ";
+            int sel;
+            std::cin >> sel;
+
+            if (sel < 1 || static_cast<size_t>(sel) > improvable.size()) {
+                std::cout << "[Error] Invalid choice.\n";
+                continue;
+            }
+
+            auto* ab = improvable[sel - 1];
+            degradeBuilding(p, ab);  // Handles printing
+        }
+
+        else if (choice == 2) {
+            if (mortgageable.empty()) {
+                std::cout << "[Error] No properties can be mortgaged.\n";
+                continue;
+            }
+
+            std::cout << "\n[Properties Available to Mortgage]\n";
+            for (size_t i = 0; i < mortgageable.size(); ++i) {
+                std::cout << i + 1 << ". " << mortgageable[i]->getName()
+                          << " (Mortgage value: $" << mortgageable[i]->getPrice() / 2 << ")\n";
+            }
+
+            std::cout << "Choose property to mortgage (1-" << mortgageable.size() << "): ";
+            int sel;
+            std::cin >> sel;
+
+            if (sel < 1 || static_cast<size_t>(sel) > mortgageable.size()) {
+                std::cout << "[Error] Invalid choice.\n";
+                continue;
+            }
+
+            auto* b = mortgageable[sel - 1];
+            mortgageBuilding(p, b);  // Handles printing
+        }
+
+        else if (choice == 3) {
+            std::cout << "[INFO] You chose to stop raising funds and declare bankruptcy.\n";
+            return false;
+        }
+
+        else {
+            std::cout << "[Error] Invalid choice. Please try again.\n";
+        }
+    }
+
+    std::cout << "\n You now have $" << p->getMoney()
+              << " and can pay your debt of $" << amountOwed << ".\n";
+    return true;
 }
 
