@@ -7,6 +7,7 @@ Residence.cc
 Gym.cc
 Action-Squares.cc
 Board.cc
+Display.cc
 Game-Controller.cc
 
 Player-impl.cc
@@ -19,4 +20,4 @@ Game-Controller-impl.cc
 Action-Squares-impl.cc
 Board-impl.cc
 
-test-trade.cc
+test-auction.cc

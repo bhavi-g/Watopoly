@@ -538,9 +538,11 @@ void GameController::promptPurchase(Player* p, Building* b) {
             std::cout << "[Controller]: " << p->getName() << " now owns " << b->getName() << "!\n";
         } else {
             std::cout << "[Controller]: " << p->getName() << " cannot afford this property.\n";
+            handleAuction(b);
         }
     } else {
         std::cout << "[Controller]: " << p->getName() << " declined to buy " << b->getName() << ".\n";
+        handleAuction(b);
     }
 }
 
@@ -845,5 +847,103 @@ void GameController::simulateTurn(Player* p, int forcedDie1, int forcedDie2) {
 
         simulateTurn(p, nextDie1, nextDie2);
     }
+}
+
+void GameController::handleAuction(Building* b) {
+    std::cout << "[Auction] " << b->getName() << " is now up for auction!\n";
+
+    struct Bidder {
+        Player* p;
+        bool active = true;
+    };
+
+    std::vector<Bidder> bidders;
+    for (const auto& [token, player] : players) {
+        if (!player->isBankrupt()) {
+            bidders.push_back({player});
+        }
+    }
+
+    if (bidders.empty()) {
+        std::cout << "[Auction] No players available to bid.\n";
+        return;
+    }
+
+    int highestBid = 0;
+    Player* highestBidder = nullptr;
+
+    while (true) {
+        for (auto& bidder : bidders) {
+            if (!bidder.active) continue;
+
+            int bid = -1;
+            std::string input;
+
+            while (true) {
+                std::cout << "[Auction] " << bidder.p->getName()
+                          << " (Balance: $" << bidder.p->getMoney() << "), enter bid (0 to pass): ";
+                std::cin >> input;
+
+                bool valid = !input.empty() && std::all_of(input.begin(), input.end(), ::isdigit);
+                if (!valid) {
+                    std::cout << "[Error] Invalid input. Please enter a non-negative number.\n";
+                    continue;
+                }
+
+                bid = std::stoi(input);
+
+                if (bid == 0) {
+                    bidder.active = false;
+                    break;
+                }
+
+                if (bid <= highestBid) {
+                    std::cout << "[Auction] Bid must be higher than current highest: $" << highestBid << ".\n";
+                    continue;
+                }
+
+                if (bid > bidder.p->getMoney()) {
+                    std::cout << "[Error] You don't have enough money. You're out.\n";
+                    bidder.active = false;
+                    break;
+                }
+
+                // Valid bid
+                highestBid = bid;
+                highestBidder = bidder.p;
+                break;
+            }
+
+            // ✅ Early exit if only one bidder remains
+            int activeCount = 0;
+            for (const auto& b : bidders) {
+                if (b.active) ++activeCount;
+            }
+            if (activeCount <= 1) goto AUCTION_END;
+        }
+    }
+
+    AUCTION_END:
+        // If only one active bidder remains and no bid was placed,
+        // auto-assign property for $0
+        if (!highestBidder) {
+            for (auto& bidder : bidders) {
+                if (bidder.active) {
+                    highestBidder = bidder.p;
+                    highestBid = 0;
+                    std::cout << "[Auction] Only one player remained. Property goes to "
+                      << highestBidder->getName() << " for FREE.\n";
+                    break;
+                }
+            }
+        }
+
+        highestBidder->pay(highestBid);
+        highestBidder->addProperty(b->getName());
+        b->setOwnerToken(highestBidder->getToken());
+
+    std::cout << "[Auction] " << highestBidder->getName()
+              << " wins the auction for " << b->getName()
+              << " at $" << highestBid << "!\n";
 }
 

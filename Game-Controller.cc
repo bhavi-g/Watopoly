@@ -86,4 +86,5 @@ public:
     bool unmortgageBuilding(Player* p, Building* b);
 
     void simulateTurn(Player* p, int die1, int die2);
+    void handleAuction(Building* b);
 };

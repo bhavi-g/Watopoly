@@ -114,3 +114,7 @@ void Player::addRollUpCup() { ++rollUpCups; }
 void Player::useRollUpCup() {
     if (rollUpCups > 0) --rollUpCups;
 }
+
+bool Player::isBankrupt() const {
+    return false; // 🔧 TEMPORARY: We'll handle actual bankruptcy logic later
+}
