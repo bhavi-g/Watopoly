@@ -1,4 +1,4 @@
-import Display;
+import new_Display;
 import Board;
 import Player;
 import <vector>;
@@ -22,7 +22,7 @@ int main() {
     players[2]->moveTo(10);   // Place Charlie on square index 10 (bottom row)
     
     // Create a Display object and print the game board.
-    Display disp;
+    new_Display disp;
     cout << "Initial board:\n";
     disp.printGameBoard(board, players);
     

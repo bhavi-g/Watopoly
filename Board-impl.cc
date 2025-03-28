@@ -3,7 +3,7 @@
 // Description:
 //   Initializes the 40 Square* instances that make up the Watopoly board.
 //   Squares include ownable (AcademicBuilding, Residence, Gym) and
-//   non-ownable (Needles Hall, SLC, Tuition, DC Tims Line, etc.).
+//   non-ownable (NEEDLESHALL, SLC, TUITION, DC Tims Line, etc.).
 //
 //   This class is purely structural — it owns the squares and exposes
 //   access to them. Gameplay control is handled externally (e.g., by GameController).
@@ -20,14 +20,14 @@ import ActionSquares;
 Board::Board() {
     // === Populate all 40 squares in order ===
 
-    squares.push_back(new CollectOSAP("Collect OSAP", 0));
+    squares.push_back(new COLLECTOSAP("COLLECT OSAP", 0));
     squares.push_back(new AcademicBuilding("AL", 1, 40, "Arts1", 50));
     squares.push_back(new SLC("SLC", 2));
     squares.push_back(new AcademicBuilding("ML", 3, 60, "Arts1", 50));
-    squares.push_back(new Tuition("Tuition", 4));
+    squares.push_back(new TUITION("TUITION", 4));
     squares.push_back(new Residence("MKV", 5, 200));
     squares.push_back(new AcademicBuilding("ECH", 6, 100, "Arts2", 50));
-    squares.push_back(new NeedlesHall("Needles Hall", 7));
+    squares.push_back(new NEEDLESHALL("NEEDLES HALL", 7));
     squares.push_back(new AcademicBuilding("PAS", 8, 100, "Arts2", 50));
     squares.push_back(new AcademicBuilding("HH", 9, 120, "Arts2", 50));
     squares.push_back(new DCTimsLine("DC Tims Line", 10));
@@ -42,7 +42,7 @@ Board::Board() {
     squares.push_back(new AcademicBuilding("OPT", 19, 200, "Health", 100));
     squares.push_back(new GooseNesting("Goose Nesting", 20));
     squares.push_back(new AcademicBuilding("EV1", 21, 220, "Env", 150));
-    squares.push_back(new NeedlesHall("Needles Hall", 22));
+    squares.push_back(new NEEDLESHALL("NEEDLES HALL", 22));
     squares.push_back(new AcademicBuilding("EV2", 23, 220, "Env", 150));
     squares.push_back(new AcademicBuilding("EV3", 24, 240, "Env", 150));
     squares.push_back(new Residence("V1", 25, 200));
@@ -56,7 +56,7 @@ Board::Board() {
     squares.push_back(new SLC("SLC", 33));
     squares.push_back(new AcademicBuilding("C2", 34, 320, "Sci2", 200));
     squares.push_back(new Residence("REV", 35, 200));
-    squares.push_back(new NeedlesHall("Needles Hall", 36));
+    squares.push_back(new NEEDLESHALL("NEEDLES HALL", 36));
     squares.push_back(new AcademicBuilding("MC", 37, 350, "Math", 200));
     squares.push_back(new CoopFee("COOP FEE", 38));
     squares.push_back(new AcademicBuilding("DC", 39, 400, "Math", 200));

@@ -23,33 +23,33 @@ LandAction ActionSquare::onLand(Player* p) {
     return LandAction::None;
 }
 
-// -------- CollectOSAP --------
-CollectOSAP::CollectOSAP(std::string name, int position)
+// -------- COLLECTOSAP --------
+COLLECTOSAP::COLLECTOSAP(std::string name, int position)
     : Square{name, position} {}
 
-LandAction CollectOSAP::onLand(Player* p) {
+LandAction COLLECTOSAP::onLand(Player* p) {
     std::cout << p->getName() << " landed on " << getName()
               << " and collected $200 from OSAP.\n";
     p->receive(200);
-    return LandAction::CollectOSAP;
+    return LandAction::COLLECTOSAP;
 }
 
-// -------- Tuition --------
-Tuition::Tuition(std::string name, int position)
+// -------- TUITION --------
+TUITION::TUITION(std::string name, int position)
     : Square{name, position} {}
 
-LandAction Tuition::onLand(Player* p) {
+LandAction TUITION::onLand(Player* p) {
     std::cout << p->getName() << " landed on " << getName()
               << " and must pay $300 or 10% of total worth.\n";
     return LandAction::PayTuition;
 }
 
-// -------- NeedlesHall --------
-NeedlesHall::NeedlesHall(std::string name, int position)
+// -------- NEEDLESHALL --------
+NEEDLESHALL::NEEDLESHALL(std::string name, int position)
     : Square{name, position} {}
 
-LandAction NeedlesHall::onLand(Player* p) {
-    return LandAction::NeedlesHall;
+LandAction NEEDLESHALL::onLand(Player* p) {
+    return LandAction::NEEDLESHALL;
 }
 
 // -------- SLC --------
@@ -75,7 +75,7 @@ LandAction SLC::onLand(Player* p) {
         explanation = "advanced to Collect OSAP!";
         p->moveTo(0);
         std::cout << "[SLC] " << p->getName() << " is " << explanation << "\n";
-        return LandAction::CollectOSAP;
+        return LandAction::COLLECTOSAP;
     }
 
     // --- Movement Cases: Distribution math ---

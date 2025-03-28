@@ -29,10 +29,10 @@ export enum class LandAction {
     Owned,            ///< Player landed on their own property → no action needed
 
     // For Action Squares
-    CollectOSAP,
+    COLLECTOSAP,
     PayTuition,
     PayCoopFee,
     Teleport,
-    NeedlesHall,
+    NEEDLESHALL,
     GoToTims
 };

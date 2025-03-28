@@ -3,9 +3,9 @@
 // Description:
 //   Contains a bundle of simple non-ownable square classes in Watopoly:
 //     - ActionSquare     (e.g., "GO TO TIMS", "Collect OSAP")
-//     - NeedlesHall      (random money gain/loss)
+//     - NEEDLESHALL      (random money gain/loss)
 //     - SLC              (teleports player to random square)
-//     - Tuition          (player pays flat amount or percentage)
+//     - TUITION          (player pays flat amount or percentage)
 //
 //   These classes are bundled together for simplicity because:
 //     - They are small and single-purpose
@@ -38,9 +38,9 @@ public:
 // Triggers a random money gain/loss event.
 // Message-only for now; logic handled by controller later.
 // --------------------------------------------
-export class NeedlesHall : public Square {
+export class NEEDLESHALL : public Square {
 public:
-    NeedlesHall(std::string name, int position);
+    NEEDLESHALL(std::string name, int position);
     LandAction onLand(Player* p) override;
 };
 
@@ -55,12 +55,12 @@ public:
 };
 
 // --------------------------------------------
-// Tuition square: pay $300 or 10% of total worth.
+// TUITION square: pay $300 or 10% of total worth.
 // Decision logic will be implemented later.
 // --------------------------------------------
-export class Tuition : public Square {
+export class TUITION : public Square {
 public:
-    Tuition(std::string name, int position);
+    TUITION(std::string name, int position);
     LandAction onLand(Player* p) override;
 };
 
@@ -68,9 +68,9 @@ public:
 // Gives the player $200 for passing/landing on OSAP.
 // GameController will eventually detect passing.
 // --------------------------------------------
-export class CollectOSAP : public Square {
+export class COLLECTOSAP : public Square {
 public:
-    CollectOSAP(std::string name, int position);
+    COLLECTOSAP(std::string name, int position);
     LandAction onLand(Player* p) override;
 };
 

@@ -30,7 +30,7 @@ import Residence;
 import AcademicBuilding;
 import Gym;
 import Board;
-import Display;
+import new_Display;
 
 export class GameController {
 private:

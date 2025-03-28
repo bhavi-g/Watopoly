@@ -361,7 +361,7 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
             break;
         }
 
-        case LandAction::NeedlesHall: {
+        case LandAction::NEEDLESHALL: {
             int roll = std::rand() % 18;
             int delta = 0;
 
@@ -383,7 +383,7 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
         }
 
         case LandAction::PayTuition: {
-            std::cout << "[Tuition] " << p->getName()
+            std::cout << "[TUITION] " << p->getName()
                       << " must choose to pay $300 or 10% of total worth.\n";
 
             std::cout << "[Controller]: Choose payment method:\n";
@@ -406,10 +406,10 @@ void GameController::playTurn(Player* p, std::optional<std::pair<int, int>> forc
 
             if (choice == 2) {
                 int fee = totalWorth / 10;
-                std::cout << "[Tuition] 10% of total worth ($" << totalWorth << ") = $" << fee << ".\n";
+                std::cout << "[TUITION] 10% of total worth ($" << totalWorth << ") = $" << fee << ".\n";
                 enforcePayment(p, fee);
             } else {
-                std::cout << "[Tuition] Paying flat $300 fee.\n";
+                std::cout << "[TUITION] Paying flat $300 fee.\n";
                 enforcePayment(p, 300);
             }
 
