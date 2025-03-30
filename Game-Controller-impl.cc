@@ -1060,3 +1060,23 @@ bool GameController::attemptToRaiseFunds(Player* p, int amountOwed) {
     return true;
 }
 
+void GameController::printAssets(Player* p) {
+    std::cout << "\n💼 Assets for " << p->getName() << " [" << p->getToken() << "]\n";
+    std::cout << "💰 Money: $" << p->getMoney() << "\n";
+    std::cout << "🥤 Roll Up Cups: " << p->getRollUpCups() << "\n";
+    
+    const auto& props = p->getProperties();
+    if (props.empty()) {
+        std::cout << "🏠 No properties owned.\n";
+    } else {
+        std::cout << "🏠 Properties:\n";
+        for (const auto& name : props) {
+            Building* b = getBuilding(name);
+            std::cout << "  - " << name;
+            if (auto* ab = dynamic_cast<AcademicBuilding*>(b)) {
+                std::cout << " | Improvements: " << ab->getImprovementCount();
+            }
+            std::cout << (b->isMortgaged() ? " [MORTGAGED]" : "") << "\n";
+        }
+    }
+}

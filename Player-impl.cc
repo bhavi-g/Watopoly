@@ -126,3 +126,7 @@ void Player::setBankrupt(bool value) {
 void Player::setRollUpCups(int count) {
     rollUpCups = count;
 }
+
+const std::vector<std::string>& Player::getProperties() const {
+    return ownedBuildings;
+}

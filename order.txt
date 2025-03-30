@@ -8,6 +8,7 @@ Gym.cc
 Action-Squares.cc
 Board.cc
 Display.cc
+new_Display.cc
 Game-Controller.cc
 
 Player-impl.cc
@@ -16,8 +17,9 @@ Building-impl.cc
 Academic-Building-impl.cc
 Residence-impl.cc
 Gym-impl.cc
+new_Display-impl.cc
 Game-Controller-impl.cc
 Action-Squares-impl.cc
 Board-impl.cc
 
-test-bankrupt.cc
+main.cc

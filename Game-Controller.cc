@@ -90,5 +90,6 @@ public:
     void declareBankruptcy(Player* debtor, Player* creditor);
     bool enforcePayment(Player* debtor, int amount, Player* creditor = nullptr);
     bool attemptToRaiseFunds(Player* p, int amountOwed);
+    void printAssets(Player* p);
 
 };

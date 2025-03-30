@@ -17,6 +17,9 @@ export module Player;
 
 import <string>;
 import <vector>;
+import <ctime>;
+import <set>;
+
 
 export class Player {
 private:
@@ -91,4 +94,7 @@ public:
     void setBankrupt(bool value);
 
     void setRollUpCups(int count);
+
+    const std::vector<std::string>& getProperties() const;
+
 };
