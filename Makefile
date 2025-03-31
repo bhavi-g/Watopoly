@@ -1,28 +1,29 @@
-# Compiler and flags
 CXX = g++-14.2.0
 CXXFLAGS = -std=c++20 -fmodules-ts -Wall -g
+HEADERS = cctype ctime fstream iomanip iostream algorithm map optional random set sstream utility vector string
 
-# Files
 ORDER_FILE = order.txt
 EXEC = watopoly
 
-# Read files from order.txt
-SRC := $(shell cat $(ORDER_FILE))
-OBJ := $(SRC:.cc=.o)
-DEP := $(OBJ:.o=.d)
+OBJECTS = $(patsubst %.cc,%.o,$(shell cat $(ORDER_FILE)))
+HEADER_OBJS = $(patsubst %,%.gcm,$(HEADERS))
 
-# Default target
-$(EXEC): $(OBJ)
-	$(CXX) $(CXXFLAGS) $^ -o $@
+all: precompile-headers $(EXEC)
 
-# Compile object files from .cc files in correct order
+# Compile the program using the object files in order
+$(EXEC): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(EXEC)
+
+# Compile .cc files into .o files
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-# Include dependency files
--include $(DEP)
+# Compile standard headers into .gcm (module interface)
+%.gcm:
+	g++-14.2.0 -std=c++20 -fmodules-ts -c -x c++-system-header $*
 
-# Clean build artifacts
-.PHONY: clean
+# Rule to precompile all standard headers
+precompile-headers: $(HEADER_OBJS)
+
 clean:
-	rm -f $(OBJ) $(DEP) $(EXEC)
+	rm -f *.o *.gcm $(EXEC)
