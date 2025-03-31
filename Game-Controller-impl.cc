@@ -563,6 +563,12 @@ bool GameController::degradeBuilding(Player* p, AcademicBuilding* ab) {
 }
 
 bool GameController::mortgageBuilding(Player* p, Building* b) {
+
+    if (!b) {
+        std::cout << "[Error] Invalid building.\n";
+        return false;
+    }
+
     if (b->getOwnerToken() != p->getToken()) {
         std::cout << "[Error] You don't own " << b->getName() << ".\n";
         return false;
@@ -605,6 +611,12 @@ bool GameController::mortgageBuilding(Player* p, Building* b) {
 }
 
 bool GameController::unmortgageBuilding(Player* p, Building* b) {
+
+    if (!b) {
+        std::cout << "[Error] Invalid building.\n";
+        return false;
+    }
+    
     if (b->getOwnerToken() != p->getToken()) {
         std::cout << "[Error] You don't own " << b->getName() << ".\n";
         return false;
