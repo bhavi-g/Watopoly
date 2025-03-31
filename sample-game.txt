@@ -1,0 +1,23 @@
+3
+Alice G 1 1500 0
+Bob B 0 1400 10 1 1
+Charlie D 2 1300 5
+AL Alice 2
+ML Bob 0
+MKV BANK 0
+TU Charlie -1
+SLC BANK 0
+EV1 Charlie 0
+EV2 Charlie 0
+EV3 Charlie 0
+PHYS Charlie 0
+B1 Charlie 0
+C2 Bob 1
+DWE Alice 0
+CPH Alice 0
+OPT Alice 0
+EIT Charlie 5
+ESC Bob 0
+RCH Charlie 0
+MC Bob 3
+DC Charlie 0

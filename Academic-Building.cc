@@ -47,6 +47,9 @@ public:
     
     int getImprovementCost() const;    // stored from constructor
 
+    void forceSetImprovements(int n); // Bypasses monopoly/improvement checks (for load only)
+
+
 
 
 

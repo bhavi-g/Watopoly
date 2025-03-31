@@ -101,5 +101,9 @@ int AcademicBuilding::calculateRent(int context) const {
     return it->second[improvements];  // 0–5
 }
 
+void AcademicBuilding::forceSetImprovements(int n) {
+    improvements = n;
+}
+
 
 
