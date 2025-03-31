@@ -87,6 +87,9 @@ int main(int argc, char* argv[]) {
         std::string propertyName, owner;
         int improvements;
         while (in >> propertyName >> owner >> improvements) {
+            std::cerr << "[DEBUG] Processing: " << propertyName
+              << " | Owner: " << owner
+              << " | Improvements: " << improvements << std::endl;
             auto* b = controller.getBuilding(propertyName);
             if (!b) continue;
 
@@ -100,11 +103,35 @@ int main(int argc, char* argv[]) {
                 }
             }
 
-            if (improvements == -1) {
-                controller.mortgageBuilding(nullptr, b);
-            } else if (auto* ab = dynamic_cast<AcademicBuilding*>(b)) {
-                ab->forceSetImprovements(improvements);
+            if (!b) {
+                std::cerr << "[Warning] Could not find building with name: "
+                          << propertyName << " (skipping)\n";
+                continue;
             }
+            
+            if (improvements == -1) {
+                Player* ownerPlayer = controller.getPlayer(b->getOwnerToken());
+                if (!ownerPlayer) {
+                    std::cerr << "[ERROR] Couldn't find owner for mortgaging: "
+                              << b->getName() << " with token: " << b->getOwnerToken() << "\n";
+                    continue;
+                }
+                std::cerr << "[DEBUG] Mortgaging: " << b->getName() << " for " << ownerPlayer->getName() << "\n";
+                controller.mortgageBuilding(ownerPlayer, b);
+            } else {
+                if (auto* ab = dynamic_cast<AcademicBuilding*>(b)) {
+                    ab->forceSetImprovements(improvements);
+                } else {
+                    if (improvements != 0) {
+                        std::cerr << "[Warning] Non-academic building " << b->getName()
+                                  << " cannot have improvements. Ignoring improvement count: "
+                                  << improvements << "\n";
+                    }
+                    // Do nothing — non-academic buildings can't have improvements
+                }
+            }
+            
+            
         }
     } else {
         int numPlayers = 0;

@@ -498,6 +498,11 @@ bool GameController::improveBuilding(Player* p, AcademicBuilding* ab) {
         return false;
     }
 
+    if (ab->isMortgaged()) {
+        std::cout << "[Error] Cannot improve a mortgaged building.\n";
+        return false;
+    }
+
     if (ab->getImprovementCount() >= 5) {
         std::cout << "[Error] Max improvements reached.\n";
         return false;
