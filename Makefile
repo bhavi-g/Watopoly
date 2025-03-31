@@ -1,6 +1,6 @@
 CXX = g++-14.2.0
 CXXFLAGS = -std=c++20 -fmodules-ts -Wall -g
-HEADERS = cctype ctime fstream iomanip iostream algorithm map optional random set sstream utility vector string
+HEADERS = cctype ctime fstream iomanip locale iostream algorithm map optional random set sstream utility vector string
 
 ORDER_FILE = order.txt
 EXEC = watopoly
@@ -27,3 +27,5 @@ precompile-headers: $(HEADER_OBJS)
 
 clean:
 	rm -f *.o *.gcm $(EXEC)
+	rm -rf gcm.cache
+	
