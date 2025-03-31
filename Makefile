@@ -1,19 +1,28 @@
-CXX=g++ 
-CXXFLAGS=-std=c++20 -Wall -O -g -MMD -Werror=vla # use -MMD to generate dependencies
-SOURCES=$(wildcard *.cc)   # list of all .cc files in the current directory
-OBJECTS=${SOURCES:.cc=.o}  # .o files depend upon .cc files with same names
-DEPENDS=${OBJECTS:.o=.d}   # .d file is list of dependencies for corresponding .cc file
-EXEC=a4q2
+# Compiler and flags
+CXX = g++-14.2.0
+CXXFLAGS = -std=c++20 -fmodules-ts -Wall -g
 
-# First target in the makefile is the default target.
-$(EXEC): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(EXEC)
+# Files
+ORDER_FILE = order.txt
+EXEC = watopoly
 
-%.o: %.cc 
-	$(CXX) -c -o $@ $< $(CXXFLAGS) 
+# Read files from order.txt
+SRC := $(shell cat $(ORDER_FILE))
+OBJ := $(SRC:.cc=.o)
+DEP := $(OBJ:.o=.d)
 
--include ${DEPENDS}
+# Default target
+$(EXEC): $(OBJ)
+	$(CXX) $(CXXFLAGS) $^ -o $@
 
+# Compile object files from .cc files in correct order
+%.o: %.cc
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# Include dependency files
+-include $(DEP)
+
+# Clean build artifacts
 .PHONY: clean
 clean:
-	rm  -f $(OBJECTS) $(DEPENDS) $(EXEC)
+	rm -f $(OBJ) $(DEP) $(EXEC)
